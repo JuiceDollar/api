@@ -62,10 +62,11 @@ export const CONFIG: ConfigType = {
 	},
 };
 
-// Start up message
-const logger = new Logger('ApiConfig');
-logger.log(`Starting API with this config:`);
-logger.log(CONFIG);
+export function logConfig() {
+	const logger = new Logger('ApiConfig');
+	logger.log(`Starting API with this config:`);
+	logger.log(JSON.stringify(CONFIG));
+}
 
 // Refer to https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
 process.env.NTBA_FIX_350 = 'true';
