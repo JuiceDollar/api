@@ -8,7 +8,7 @@ on:
 env:
   DOCKER_TAGS: dfxswiss/deuro-api:beta
   AZURE_RESOURCE_GROUP: rg-dfx-api-dev
-  AZURE_CONTAINER_APP: ca-dfx-dea-dev
+  AZURE_CONTAINER_APP: ca-dfx-jdta-dev
   DEPLOY_INFO: ${{ github.ref_name }}-${{ github.sha }}
 
 jobs:
