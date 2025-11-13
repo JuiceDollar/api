@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { CONFIG, VIEM_CONFIG } from 'api.config';
 import { ChallengesService } from 'challenges/challenges.service';
-import { EcosystemDepsService } from 'ecosystem/ecosystem.deps.service';
 import { EcosystemMinterService } from 'ecosystem/ecosystem.minter.service';
+import { EcosystemPoolSharesService } from 'ecosystem/ecosystem.poolshares.service';
 import { EcosystemStablecoinService } from 'ecosystem/ecosystem.stablecoin.service';
 import { PositionsService } from 'positions/positions.service';
 import { PricesService } from 'prices/prices.service';
@@ -32,7 +32,7 @@ export class ApiService {
 		private readonly positions: PositionsService,
 		private readonly prices: PricesService,
 		private readonly stablecoin: EcosystemStablecoinService,
-		private readonly deps: EcosystemDepsService,
+		private readonly poolShares: EcosystemPoolSharesService,
 		private readonly challenges: ChallengesService,
 		private readonly leadrate: SavingsLeadrateService,
 		private readonly savings: SavingsCoreService,
@@ -69,7 +69,7 @@ export class ApiService {
 				await timeTask('updatePrices', () => this.prices.updatePrices()).catch(() => {}),
 				await timeTask('updateEcosystemKeyValues', () => this.stablecoin.updateEcosystemKeyValues()).catch(() => {}),
 				await timeTask('updateEcosystemMintBurnMapping', () => this.stablecoin.updateEcosystemMintBurnMapping()).catch(() => {}),
-				await timeTask('updateDepsInfo', () => this.deps.updateDepsInfo()).catch(() => {}),
+				await timeTask('updatePoolSharesInfo', () => this.poolShares.updatePoolSharesInfo()).catch(() => {}),
 				await timeTask('updateLeadrateRates', () => this.leadrate.updateLeadrateRates()).catch(() => {}),
 				await timeTask('updateLeadrateProposals', () => this.leadrate.updateLeadrateProposals()).catch(() => {}),
 				await timeTask('updateChallengeV2s', () => this.challenges.updateChallengeV2s()).catch(() => {}),

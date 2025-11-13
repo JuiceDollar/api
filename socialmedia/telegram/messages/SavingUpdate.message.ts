@@ -1,7 +1,8 @@
-import { CONFIG } from 'api.config';
+import { CONFIG, PROTOCOL_STABLECOIN_NAME } from 'api.config';
 import { FrontendCodeSavingsQuery } from 'frontendcode/frontendcode.types';
 import { createRefCodeLabelLink } from 'socialmedia/socialmedia.helper';
 import { formatCurrency } from 'utils/format';
+import { ExplorerAddressUrl, ExplorerTxUrl } from 'utils/func-helper';
 import { formatUnits } from 'viem';
 
 export function SavingUpdateMessage(saving: FrontendCodeSavingsQuery): string[] {
@@ -9,11 +10,11 @@ export function SavingUpdateMessage(saving: FrontendCodeSavingsQuery): string[] 
 	const usedRef = refCodeLabelLink ? `🪢 used Ref: ${refCodeLabelLink}` : '';
 
 	const message = `
-*New dEURO Savings!*
+*New ${PROTOCOL_STABLECOIN_NAME} Savings!*
 
 🔏 Savings Amount: *${formatCurrency(formatUnits(BigInt(saving.amount), 18))}*
 🧲 ${formatCurrency(formatUnits(BigInt(saving.rate), 4))}% APR
-👤 [Saver](https://etherscan.io/address/${saving.account}) / [TX](https://etherscan.io/tx/${saving.txHash})
+👤 [Saver](${ExplorerAddressUrl(saving.account)}) / [TX](${ExplorerTxUrl(saving.txHash)})
 ${usedRef}
 `;
 

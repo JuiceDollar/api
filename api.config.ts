@@ -1,13 +1,12 @@
 import { Chain, createPublicClient, http } from 'viem';
-import { mainnet, polygon } from 'viem/chains';
 
 import { Logger } from '@nestjs/common';
+import { testnet } from 'chains';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Verify environment
 if (process.env.RPC_URL_MAINNET === undefined) throw new Error('RPC_URL_MAINNET not available');
-if (process.env.RPC_URL_POLYGON === undefined) throw new Error('RPC_URL_POLYGON not available');
 if (process.env.COINGECKO_API_KEY === undefined) throw new Error('COINGECKO_API_KEY not available');
 
 // Config type
@@ -19,7 +18,7 @@ export type ConfigType = {
 	chain: Chain;
 	network: {
 		mainnet: string;
-		polygon: string;
+		testnet: string;
 	};
 	telegram: {
 		botToken: string;
@@ -38,14 +37,14 @@ export type ConfigType = {
 
 // Create config
 export const CONFIG: ConfigType = {
-	app: process.env.CONFIG_APP_URL || 'https://app.deuro.com',
-	indexer: process.env.CONFIG_INDEXER_URL || 'https://ponder.deuro.com/',
-	indexerFallback: process.env.CONFIG_INDEXER_FALLBACK_URL || 'https://dev.ponder.deuro.com/',
+	app: process.env.CONFIG_APP_URL,
+	indexer: process.env.CONFIG_INDEXER_URL,
+	indexerFallback: process.env.CONFIG_INDEXER_FALLBACK_URL,
 	coingeckoApiKey: process.env.COINGECKO_API_KEY,
-	chain: process.env.CONFIG_CHAIN === 'polygon' ? polygon : mainnet, // @dev: default mainnet
+	chain: testnet,
 	network: {
 		mainnet: process.env.RPC_URL_MAINNET,
-		polygon: process.env.RPC_URL_POLYGON,
+		testnet: process.env.RPC_URL_MAINNET,
 	},
 	telegram: {
 		botToken: process.env.TELEGRAM_BOT_TOKEN,
@@ -75,7 +74,7 @@ process.env.NTBA_FIX_350 = 'true';
 export const VIEM_CHAIN = CONFIG.chain;
 export const VIEM_CONFIG = createPublicClient({
 	chain: VIEM_CHAIN,
-	transport: http(process.env.CONFIG_CHAIN === 'polygon' ? CONFIG.network.polygon : CONFIG.network.mainnet),
+	transport: http(CONFIG.network.mainnet),
 	batch: {
 		multicall: {
 			wait: 200,
@@ -89,3 +88,7 @@ export const COINGECKO_CLIENT = (query: string) => {
 	const uri: string = `https://pro-api.coingecko.com${query}`;
 	return fetch(`${uri}${hasParams ? '&' : '?'}x_cg_pro_api_key=${CONFIG.coingeckoApiKey}`);
 };
+
+export const PROTOCOL_STABLECOIN_SYMBOL = 'JUSD';
+export const PROTOCOL_STABLECOIN_NAME = 'Juice Dollar';
+export const POOL_SHARES_SYMBOL = 'JUICE';

@@ -1,24 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ADDRESS, JuiceDollarABI as ProtocolStablecoinABI } from '@juicedollar/jusd';
+import { Injectable } from '@nestjs/common';
 import { VIEM_CONFIG } from 'api.config';
-import { EcosystemDepsService } from 'ecosystem/ecosystem.deps.service';
+import { EcosystemMinterService } from 'ecosystem/ecosystem.minter.service';
+import { EcosystemPoolSharesService } from 'ecosystem/ecosystem.poolshares.service';
+import { EcosystemStablecoinService } from 'ecosystem/ecosystem.stablecoin.service';
 import { PositionsService } from 'positions/positions.service';
+import { SavingsCoreService } from 'savings/savings.core.service';
 import { uniqueValues } from 'utils/format-array';
 import { formatUnits } from 'viem';
-import { AnalyticsExposureItem, ApiAnalyticsCollateralExposure, ApiAnalyticsDepsEarnings } from './analytics.types';
-import { EcosystemStablecoinService } from 'ecosystem/ecosystem.stablecoin.service';
-import { EcosystemMinterService } from 'ecosystem/ecosystem.minter.service';
-import { ADDRESS } from '@deuro/eurocoin';
-import { DecentralizedEUROABI } from '@deuro/eurocoin';
-import { SavingsCoreService } from 'savings/savings.core.service';
+import { AnalyticsExposureItem, ApiAnalyticsCollateralExposure, ApiAnalyticsPoolSharesEarnings } from './analytics.types';
 
 @Injectable()
 export class AnalyticsService {
-	private readonly logger = new Logger(this.constructor.name);
 	private exposure: ApiAnalyticsCollateralExposure;
 
 	constructor(
 		private readonly positions: PositionsService,
-		private readonly deps: EcosystemDepsService,
+		private readonly poolShares: EcosystemPoolSharesService,
 		private readonly fc: EcosystemStablecoinService,
 		private readonly minters: EcosystemMinterService,
 		private readonly save: SavingsCoreService
@@ -28,20 +26,20 @@ export class AnalyticsService {
 		const positions = this.positions.getPositionsOpen().map;
 		const list = Object.values(positions);
 		const collaterals = list.map((p) => p.collateral).filter(uniqueValues);
-		const deps = this.deps.getEcosystemDepsInfo();
+		const poolShares = this.poolShares.getEcosystemPoolSharesInfo();
 
 		let positionsTheta: number = 0;
 		let positionsThetaPerToken: number = 0;
 
 		const minterReserveRaw = await VIEM_CONFIG.readContract({
-			address: ADDRESS[VIEM_CONFIG.chain.id].decentralizedEURO,
-			abi: DecentralizedEUROABI,
+			address: ADDRESS[VIEM_CONFIG.chain.id].juiceDollar,
+			abi: ProtocolStablecoinABI,
 			functionName: 'minterReserve',
 		});
 
 		const balanceReserveRaw = await VIEM_CONFIG.readContract({
-			address: ADDRESS[VIEM_CONFIG.chain.id].decentralizedEURO,
-			abi: DecentralizedEUROABI,
+			address: ADDRESS[VIEM_CONFIG.chain.id].juiceDollar,
+			abi: ProtocolStablecoinABI,
 			functionName: 'balanceOf',
 			args: [ADDRESS[VIEM_CONFIG.chain.id].equity],
 		});
@@ -75,7 +73,7 @@ export class AnalyticsService {
 
 			const totalTheta = (interestAvg * parseFloat(totalMinted)) / 365;
 			positionsTheta += totalTheta;
-			const thetaPerToken = totalTheta / deps.values.totalSupply;
+			const thetaPerToken = totalTheta / poolShares.values.totalSupply;
 			positionsThetaPerToken += thetaPerToken;
 
 			const totalContributionMul = pos.reduce<bigint>((a, b) => {
@@ -84,8 +82,8 @@ export class AnalyticsService {
 
 			const totalContributionRaw = BigInt(Math.floor(parseInt(formatUnits(totalContributionMul, 6))));
 			const equityInReserveWipedRaw = equityInReserveRaw + totalContributionRaw - totalMintedRaw;
-			const depsPriceWiped = (parseFloat(formatUnits(equityInReserveWipedRaw, 18)) * 3) / deps.values.totalSupply;
-			const riskRatioWiped = Math.round(1_000_000 * (1 - depsPriceWiped / deps.values.price)) / 1_000_000;
+			const poolSharesPriceWiped = (parseFloat(formatUnits(equityInReserveWipedRaw, 18)) * 3) / poolShares.values.totalSupply;
+			const riskRatioWiped = Math.round(1_000_000 * (1 - poolSharesPriceWiped / poolShares.values.price)) / 1_000_000;
 
 			const data: AnalyticsExposureItem = {
 				collateral: {
@@ -106,10 +104,10 @@ export class AnalyticsService {
 					totalMintedRatio: totalMintedRatio,
 					interestAverage: interestAvg,
 					totalTheta: totalTheta,
-					thetaPerDepsToken: thetaPerToken,
+					thetaPerPoolSharesToken: thetaPerToken,
 				},
 				reserveRiskWiped: {
-					depsPrice: depsPriceWiped < 0 ? 0 : depsPriceWiped,
+					poolSharesPrice: poolSharesPriceWiped < 0 ? 0 : poolSharesPriceWiped,
 					riskRatio: riskRatioWiped,
 				},
 			};
@@ -122,13 +120,13 @@ export class AnalyticsService {
 				balanceInReserve: parseFloat(balanceReserve),
 				mintersContribution: parseFloat(minterReserve),
 				equityInReserve: parseFloat(equityInReserve),
-				depsPrice: deps.values.price,
-				depsTotalSupply: deps.values.totalSupply,
+				poolSharesPrice: poolShares.values.price,
+				poolSharesTotalSupply: poolShares.values.totalSupply,
 				thetaFromPositions: positionsTheta,
 				thetaPerToken: positionsThetaPerToken,
 				earningsPerAnnum: positionsTheta * 365,
 				earningsPerToken: positionsThetaPerToken * 365,
-				priceToEarnings: deps.values.price / (positionsThetaPerToken * 365),
+				priceToEarnings: poolShares.values.price / (positionsThetaPerToken * 365),
 				priceToBookValue: 3,
 			},
 			exposures: returnData,
@@ -137,7 +135,7 @@ export class AnalyticsService {
 		return this.exposure;
 	}
 
-	async getDepsEarnings(): Promise<ApiAnalyticsDepsEarnings> {
+	async getPoolSharesEarnings(): Promise<ApiAnalyticsPoolSharesEarnings> {
 		const num: number = this.positions.getPositionsList().list.filter((p) => p.isOriginal).length;
 		const positionProposalFees: number = 1000 * num;
 		const investFeeRaw = this.fc.getEcosystemStablecoinKeyValues()['Equity:InvestedFeePaidPPM']?.amount || 0n;
@@ -147,7 +145,8 @@ export class AnalyticsService {
 		const minterProposalFees = this.minters
 			.getMintersList()
 			.list.reduce<number>((a, b) => a + parseFloat(formatUnits(BigInt(b.applicationFee), 18)), 0);
-		const otherProfitClaims: number = this.deps.getEcosystemDepsInfo().earnings.profit - positionProposalFees - minterProposalFees;
+		const otherProfitClaims: number =
+			this.poolShares.getEcosystemPoolSharesInfo().earnings.profit - positionProposalFees - minterProposalFees;
 
 		const expo = await this.getCollateralExposure();
 		const equityAdjusted: number = expo.general.equityInReserve;
@@ -163,7 +162,7 @@ export class AnalyticsService {
 			otherContributions,
 
 			savingsInterestCosts: this.save.getInfo().totalInterest,
-			otherLossClaims: this.deps.getEcosystemDepsInfo().earnings.loss,
+			otherLossClaims: this.poolShares.getEcosystemPoolSharesInfo().earnings.loss,
 		};
 	}
 }

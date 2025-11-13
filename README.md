@@ -13,8 +13,8 @@ $ yarn install
 ```
 PORT=3000
 
-CONFIG_APP_URL=https://app.deuro.com
-CONFIG_INDEXER_URL=https://ponder.deuro.com
+CONFIG_APP_URL=https://app.juicedollar.com
+CONFIG_INDEXER_URL=https://ponder.juicedollar.com
 CONFIG_CHAIN=mainnet
 
 RPC_URL_MAINNET=https://eth-mainnet.g.alchemy.com/v2/[API-KEY]

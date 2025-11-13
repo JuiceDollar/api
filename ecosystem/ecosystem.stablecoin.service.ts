@@ -1,12 +1,12 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS } from '@deuro/eurocoin';
+import { ADDRESS } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { CONFIG } from 'api.config';
 import { PricesService } from 'prices/prices.service';
 import { Address } from 'viem';
 import { EcosystemCollateralService } from './ecosystem.collateral.service';
-import { EcosystemDepsService } from './ecosystem.deps.service';
+import { EcosystemPoolSharesService } from './ecosystem.poolshares.service';
 import {
 	ApiEcosystemMintBurnMapping,
 	ApiEcosystemStablecoinInfo,
@@ -26,7 +26,7 @@ export class EcosystemStablecoinService {
 	private ecosystemMintBurnMapping: ServiceEcosystemMintBurnMapping = {};
 
 	constructor(
-		private readonly depsService: EcosystemDepsService,
+		private readonly poolSharesService: EcosystemPoolSharesService,
 		private readonly collService: EcosystemCollateralService,
 		private readonly pricesService: PricesService
 	) {}
@@ -38,9 +38,9 @@ export class EcosystemStablecoinService {
 	getEcosystemStablecoinInfo(): ApiEcosystemStablecoinInfo {
 		return {
 			erc20: {
-				name: 'Decentralized Euro',
-				address: ADDRESS[CONFIG.chain.id as number].decentralizedEURO,
-				symbol: 'dEURO',
+				name: 'Juice Dollar',
+				address: ADDRESS[CONFIG.chain.id as number].juiceDollar,
+				symbol: 'JUSD',
 				decimals: 18,
 			},
 			chain: {
@@ -48,9 +48,9 @@ export class EcosystemStablecoinService {
 				id: CONFIG.chain.id,
 			},
 			price: {
-				usd: Object.values(this.pricesService.getPrices()).find((p) => p.symbol === 'dEURO')?.price?.usd || 1,
+				usd: Object.values(this.pricesService.getPrices()).find((p) => p.symbol === 'JUSD')?.price?.usd || 1,
 			},
-			deps: this.depsService.getEcosystemDepsInfo()?.values,
+			poolShares: this.poolSharesService.getEcosystemPoolSharesInfo()?.values,
 			tvl: this.collService.getCollateralStats()?.totalValueLocked ?? {},
 			...this.ecosystemStablecoin,
 		};

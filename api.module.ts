@@ -7,8 +7,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ApiService } from 'api.service';
 import { ChallengesService } from 'challenges/challenges.service';
 import { EcosystemCollateralService } from 'ecosystem/ecosystem.collateral.service';
-import { EcosystemDepsService } from 'ecosystem/ecosystem.deps.service';
 import { EcosystemMinterService } from 'ecosystem/ecosystem.minter.service';
+import { EcosystemPoolSharesService } from 'ecosystem/ecosystem.poolshares.service';
 import { EcosystemStablecoinService } from 'ecosystem/ecosystem.stablecoin.service';
 import { PositionsService } from 'positions/positions.service';
 import { PricesService } from 'prices/prices.service';
@@ -25,8 +25,8 @@ import { AnalyticsService } from 'analytics/analytics.service';
 import { BridgeService } from 'bridge/bridge.service';
 import { ChallengesController } from 'challenges/challenges.controller';
 import { EcosystemCollateralController } from 'ecosystem/ecosystem.collateral.controller';
-import { EcosystemDepsController } from 'ecosystem/ecosystem.deps.controller';
 import { EcosystemMinterController } from 'ecosystem/ecosystem.minter.controller';
+import { EcosystemPoolSharesController } from 'ecosystem/ecosystem.poolshares.controller';
 import { EcosystemStablecoinController } from 'ecosystem/ecosystem.stablecoin.controller';
 import { FrontendCodeService } from 'frontendcode/frontendcode.service';
 import { PositionsController } from 'positions/positions.controller';
@@ -42,7 +42,7 @@ import { SavingsLeadrateController } from 'savings/savings.leadrate.controller';
 		PositionsController,
 		EcosystemMinterController,
 		EcosystemCollateralController,
-		EcosystemDepsController,
+		EcosystemPoolSharesController,
 		EcosystemStablecoinController,
 		SavingsLeadrateController,
 		SavingsCoreController,
@@ -55,7 +55,7 @@ import { SavingsLeadrateController } from 'savings/savings.leadrate.controller';
 		PositionsService,
 		EcosystemMinterService,
 		EcosystemCollateralService,
-		EcosystemDepsService,
+		EcosystemPoolSharesService,
 		EcosystemStablecoinService,
 		SavingsLeadrateService,
 		SavingsCoreService,

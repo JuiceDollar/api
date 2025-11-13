@@ -53,9 +53,9 @@ export class TwitterService implements OnModuleInit, SocialMediaFct {
 		await this.sendPost(messageInfo[0], messageInfo[1]);
 	}
 
-	async doSendTradeUpdates(trade: TradeQuery, depsMarketCap: number, totalShares: bigint): Promise<void> {
+	async doSendTradeUpdates(trade: TradeQuery, poolSharesMarketCap: number, totalShares: bigint): Promise<void> {
 		if (BigInt(trade.amount) === 0n) return;
-		const messageInfo = TradeMessage(trade, depsMarketCap, totalShares);
+		const messageInfo = TradeMessage(trade, poolSharesMarketCap, totalShares);
 		await this.sendPost(messageInfo[0], messageInfo[1]);
 	}
 

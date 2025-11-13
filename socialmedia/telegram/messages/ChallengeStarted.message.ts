@@ -1,3 +1,4 @@
+import { PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { ChallengesQueryItem } from 'challenges/challenges.types';
 import { PositionQuery } from 'positions/positions.types';
 import { formatCurrency } from 'utils/format';
@@ -29,7 +30,7 @@ Collateral: ${position.collateralName} (${position.collateralSymbol})
 At: ${position.collateral}
 Size: ${formatCurrency(size, 2, 2)} ${position.collateralSymbol}
 Min: ${formatCurrency(min, 2, 2)} ${position.collateralSymbol}
-Starting Price: ${formatCurrency(price, 2, 2)} dEURO
+Starting Price: ${formatCurrency(price, 2, 2)} ${PROTOCOL_STABLECOIN_SYMBOL}
 
 Duration: ${formatCurrency(duration / 1000 / 60 / 60, 1, 1)} hours
 Quick Auction: ${isQuickAuction}

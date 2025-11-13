@@ -1,10 +1,10 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, PositionV2ABI, SavingsABI } from '@deuro/eurocoin';
+import { ADDRESS, PositionV2ABI, SavingsABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { FIVEDAYS_MS } from 'utils/const-helper';
 import { Address, erc20Abi, getAddress } from 'viem';
-import { CONFIG, VIEM_CONFIG } from '../api.config';
 import { PONDER_CLIENT } from '../api.apollo.config';
+import { CONFIG, VIEM_CONFIG } from '../api.config';
 import {
 	ApiMintingUpdateListing,
 	ApiMintingUpdateMapping,
@@ -85,7 +85,7 @@ export class PositionsService {
 						items {
 							position
 							owner
-							deuro
+							stablecoinAddress
 							collateral
 							price
 
@@ -104,9 +104,9 @@ export class PositionsService {
 							expiration
 							challengePeriod
 
-							deuroName
-							deuroSymbol
-							deuroDecimals
+							stablecoinName
+							stablecoinSymbol
+							stablecoinDecimals
 
 							collateralName
 							collateralSymbol
@@ -201,7 +201,7 @@ export class PositionsService {
 
 				position: getAddress(p.position),
 				owner: getAddress(p.owner),
-				deuro: getAddress(p.deuro),
+				stablecoinAddress: getAddress(p.stablecoinAddress),
 				collateral: getAddress(p.collateral),
 				price: p.price,
 
@@ -221,9 +221,9 @@ export class PositionsService {
 				expiration: p.expiration,
 				challengePeriod: p.challengePeriod,
 
-				deuroName: p.deuroName,
-				deuroSymbol: p.deuroSymbol,
-				deuroDecimals: p.deuroDecimals,
+				stablecoinName: p.stablecoinName,
+				stablecoinSymbol: p.stablecoinSymbol,
+				stablecoinDecimals: p.stablecoinDecimals,
 
 				collateralName: p.collateralName,
 				collateralSymbol: p.collateralSymbol,

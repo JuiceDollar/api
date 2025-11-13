@@ -1,3 +1,4 @@
+import { PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { MinterQuery } from 'ecosystem/ecosystem.minter.types';
 import { formatCurrency } from 'utils/format';
 import { AppUrl, ExplorerTxUrl } from 'utils/func-helper';
@@ -8,7 +9,7 @@ export function MinterProposalVetoedMessage(minter: MinterQuery): string {
 
 Minter: ${minter.minter}
 Suggestor: ${minter.suggestor}
-Application Fee: ${formatCurrency(minter.applicationFee / 1e18, 2, 2)} dEURO
+Application Fee: ${formatCurrency(minter.applicationFee / 1e18, 2, 2)} ${PROTOCOL_STABLECOIN_SYMBOL}
 Message: ${minter.applyMessage}
 
 Vetor: ${minter.vetor}

@@ -1,6 +1,7 @@
-import { CONFIG } from 'api.config';
+import { CONFIG, PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { StablecoinBridgeQuery } from 'bridge/bridge.types';
 import { formatCurrency } from 'utils/format';
+import { ExplorerAddressUrl, ExplorerTxUrl } from 'utils/func-helper';
 import { formatUnits } from 'viem';
 
 export function StablecoinBridgeMessage(stablecoinBridge: StablecoinBridgeQuery, stablecoinParam: string): string[] {
@@ -9,11 +10,11 @@ export function StablecoinBridgeMessage(stablecoinBridge: StablecoinBridgeQuery,
 	const message = `
 *New Swap!*
 
-↔️ ${stablecoin} > dEURO
+↔️ ${stablecoin} > ${PROTOCOL_STABLECOIN_SYMBOL}
 ➡️ ${stablecoin} ${formatCurrency(formatUnits(BigInt(stablecoinBridge.amount), 18))}
-⬅️ dEURO ${formatCurrency(formatUnits(BigInt(stablecoinBridge.amount), 18))}
+⬅️ ${PROTOCOL_STABLECOIN_SYMBOL} ${formatCurrency(formatUnits(BigInt(stablecoinBridge.amount), 18))}
 
-👤 [Swapper](https://etherscan.io/address/${stablecoinBridge.swapper}) / [TX](https://etherscan.io/tx/${stablecoinBridge.txHash})
+👤 [Swapper](${ExplorerAddressUrl(stablecoinBridge.swapper)}) / [TX](${ExplorerTxUrl(stablecoinBridge.txHash)})
 `;
 
 	const image = `${CONFIG.telegram.imagesDir}/SwapStablecoin.mp4`;

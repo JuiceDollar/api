@@ -1,6 +1,6 @@
 import { Hex, hexToString } from 'viem';
 
-const DEURO_WALLET_FRONTEND_CODE = '0xe8d44050873dba865aa7c170ab4cce64d90839a34dcfd6cf71d14e0205443b1b';
+const JUICE_WALLET_FRONTEND_CODE = '0xe8d44050873dba865aa7c170ab4cce64d90839a34dcfd6cf71d14e0205443b1b';
 
 export function createRefCode(frontendCode: string): string | undefined {
 	if (frontendCode?.startsWith('0x00')) {
@@ -13,17 +13,17 @@ export function delay(ms: number): Promise<void> {
 }
 
 export function createRefCodeLabelLink(frontendCode: string): string {
-	if (frontendCode.toLowerCase() === DEURO_WALLET_FRONTEND_CODE.toLowerCase()) {
-		return `dEURO Wallet`;
+	if (frontendCode.toLowerCase() === JUICE_WALLET_FRONTEND_CODE.toLowerCase()) {
+		return `Juice Wallet`;
 	}
 
 	const refCode = createRefCode(frontendCode);
 	if (!refCode) return '';
-	
+
 	// Special case for Cake Wallet
 	if (refCode === 'Cake Wallet') {
 		return `[${refCode}](https://cakewallet.com/)`;
 	}
-	
-	return `[${refCode}](https://app.deuro.com?ref=${refCode})`;
+
+	return `[${refCode}](https://app.juice.com?ref=${refCode})`;
 }

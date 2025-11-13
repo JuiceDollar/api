@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { StablecoinEnum } from 'bridge/bridge.enum';
 import { BridgeService } from 'bridge/bridge.service';
 import { StablecoinBridgeQuery } from 'bridge/bridge.types';
-import { EcosystemDepsService } from 'ecosystem/ecosystem.deps.service';
 import { EcosystemMinterService } from 'ecosystem/ecosystem.minter.service';
+import { EcosystemPoolSharesService } from 'ecosystem/ecosystem.poolshares.service';
 import { EcosystemMintQueryItem } from 'ecosystem/ecosystem.stablecoin.types';
 import { FrontendCodeService } from 'frontendcode/frontendcode.service';
 import { FrontendCodeRegisteredQuery, FrontendCodeSavingsQuery } from 'frontendcode/frontendcode.types';
@@ -15,7 +15,7 @@ export interface SocialMediaFct {
 	doSendUpdates(): Promise<void>;
 	doSendSavingUpdates(savingSaved: FrontendCodeSavingsQuery): Promise<void>;
 	doSendFrontendCodeUpdates(frontendCodeRegistered: FrontendCodeRegisteredQuery): Promise<void>;
-	doSendTradeUpdates(trade: TradeQuery, depsMarketCap: number, totalShares: bigint): Promise<void>;
+	doSendTradeUpdates(trade: TradeQuery, poolSharesMarketCap: number, totalShares: bigint): Promise<void>;
 	doSendBridgeUpdates(bridge: StablecoinBridgeQuery, stablecoin: string): Promise<void>;
 	doSendMintUpdates(mint: EcosystemMintQueryItem): Promise<void>;
 }
@@ -34,7 +34,7 @@ export class SocialMediaService {
 
 	constructor(
 		private readonly frontendCode: FrontendCodeService,
-		private readonly deps: EcosystemDepsService,
+		private readonly poolShares: EcosystemPoolSharesService,
 		private readonly trades: TradesService,
 		private readonly bridges: BridgeService,
 		private readonly mints: EcosystemMinterService
@@ -125,14 +125,14 @@ export class SocialMediaService {
 			if (requestedTrades.length > 0) {
 				this.socialMediaState.tradeUpdates = Date.now();
 
-				const depsInfo = this.deps.getEcosystemDepsInfo();
-				const depsMarketCap = depsInfo.values.depsMarketCapInChf;
+				const poolSharesInfo = this.poolShares.getEcosystemPoolSharesInfo();
+				const poolSharesMarketCap = poolSharesInfo.values.poolSharesMarketCapInChf;
 
 				for (const trade of requestedTrades) {
 					const totalShares = await this.trades.getTotalShares(trade.trader);
 
 					for (const value of this.socialMediaRegister.values()) {
-						await value.doSendTradeUpdates(trade, depsMarketCap, totalShares);
+						await value.doSendTradeUpdates(trade, poolSharesMarketCap, totalShares);
 					}
 				}
 			}

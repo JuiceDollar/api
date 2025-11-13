@@ -1,4 +1,4 @@
-import { CONFIG } from 'api.config';
+import { CONFIG, PROTOCOL_STABLECOIN_NAME } from 'api.config';
 import { FrontendCodeSavingsQuery } from 'frontendcode/frontendcode.types';
 import { createRefCode } from 'socialmedia/socialmedia.helper';
 import { formatCurrency } from 'utils/format';
@@ -10,7 +10,7 @@ export function SavingUpdateMessage(saving: FrontendCodeSavingsQuery): string[] 
 	const usedRef = displayRef ? `🪢 used Ref: ${displayRef}` : '';
 
 	const message = `
-New dEURO Savings!
+New ${PROTOCOL_STABLECOIN_NAME} Savings!
     
 🔏 Savings Amount: ${formatCurrency(formatUnits(BigInt(saving.amount), 18))}
 🧲 ${formatCurrency(formatUnits(BigInt(saving.rate), 4))}% APR

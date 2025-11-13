@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EcosystemStablecoinService } from './ecosystem.stablecoin.service';
-import { ApiEcosystemStablecoinInfo, ApiEcosystemStablecoinKeyValues, ApiEcosystemMintBurnMapping } from './ecosystem.stablecoin.types';
+import { ApiEcosystemMintBurnMapping, ApiEcosystemStablecoinInfo, ApiEcosystemStablecoinKeyValues } from './ecosystem.stablecoin.types';
 
 @ApiTags('Ecosystem Controller')
 @Controller('ecosystem/stablecoin')
@@ -18,7 +18,7 @@ export class EcosystemStablecoinController {
 
 	@Get('info/totalSupply')
 	@ApiResponse({
-		description: 'dEURO total supply',
+		description: 'Juice Dollar total supply',
 	})
 	getStablecoinTotalSupply(): number {
 		return this.stablecoin.getTotalSupply();

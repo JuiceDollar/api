@@ -75,10 +75,10 @@ export type ApiEcosystemStablecoinInfo = ServiceEcosystemStablecoin & {
 	price: {
 		usd: number;
 	};
-	deps: {
+	poolShares: {
 		price: number;
 		totalSupply: number;
-		depsMarketCapInChf: number;
+		poolSharesMarketCapInChf: number;
 	};
 	tvl: PriceQueryCurrencies;
 };

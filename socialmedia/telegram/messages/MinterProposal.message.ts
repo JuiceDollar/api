@@ -1,3 +1,4 @@
+import { PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { MinterQuery } from 'ecosystem/ecosystem.minter.types';
 import { formatCurrency } from 'utils/format';
 import { AppUrl, ExplorerTxUrl } from 'utils/func-helper';
@@ -12,7 +13,7 @@ Application Period: ${Math.floor(minter.applicationPeriod / 60 / 60)} hours
 Application Veto Until: ${d.toString().split(' ').slice(0, 5).join(' ')}
 Minter: ${minter.minter}
 Suggestor: ${minter.suggestor}
-Application Fee: ${formatCurrency(minter.applicationFee / 1e18, 2, 2)} dEURO
+Application Fee: ${formatCurrency(minter.applicationFee / 1e18, 2, 2)} ${PROTOCOL_STABLECOIN_SYMBOL}
 Message: ${minter.applyMessage}
 
 [Goto Governance](${AppUrl(`/governance`)})

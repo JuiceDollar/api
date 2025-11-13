@@ -1,4 +1,4 @@
-import { CONFIG } from 'api.config';
+import { CONFIG, PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { StablecoinBridgeQuery } from 'bridge/bridge.types';
 import { formatCurrency } from 'utils/format';
 import { formatUnits } from 'viem';
@@ -9,9 +9,9 @@ export function StablecoinBridgeMessage(stablecoinBridge: StablecoinBridgeQuery,
 	const message = `
 New Swap!
 
-↔️ ${stablecoin} > dEURO
+↔️ ${stablecoin} > ${PROTOCOL_STABLECOIN_SYMBOL}
 ➡️ ${stablecoin} ${formatCurrency(formatUnits(BigInt(stablecoinBridge.amount), 18))}
-⬅️ dEURO ${formatCurrency(formatUnits(BigInt(stablecoinBridge.amount), 18))}
+⬅️ ${PROTOCOL_STABLECOIN_SYMBOL} ${formatCurrency(formatUnits(BigInt(stablecoinBridge.amount), 18))}
 
 🔗 Verifiable on the blockchain
 `;

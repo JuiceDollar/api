@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { gql } from '@apollo/client/core';
-import { VIEM_CONFIG } from 'api.config';
+import { ADDRESS, MintingHubGatewayABI } from '@juicedollar/jusd';
+import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
+import { VIEM_CONFIG } from 'api.config';
+import { Address } from 'viem';
 import {
 	ApiBidsBidders,
 	ApiBidsChallenges,
@@ -27,8 +29,6 @@ import {
 	ChallengesQueryItemMapping,
 	ChallengesQueryStatus,
 } from './challenges.types';
-import { Address } from 'viem';
-import { ADDRESS, MintingHubGatewayABI } from '@deuro/eurocoin';
 
 @Injectable()
 export class ChallengesService {
