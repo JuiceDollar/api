@@ -27,17 +27,20 @@ export class EcosystemPoolSharesService {
 			address: addr,
 			abi: EquityABI,
 			functionName: 'price',
+			authorizationList: undefined,
 		});
 		const fetchedTotalSupply = await VIEM_CONFIG.readContract({
 			address: addr,
 			abi: EquityABI,
 			functionName: 'totalSupply',
+			authorizationList: undefined,
 		});
 
 		const minterReserveRaw = await VIEM_CONFIG.readContract({
 			address: ADDRESS[VIEM_CONFIG.chain.id].juiceDollar,
 			abi: ProtocolStablecoinABI,
 			functionName: 'minterReserve',
+			authorizationList: undefined,
 		});
 
 		const balanceReserveRaw = await VIEM_CONFIG.readContract({
@@ -45,6 +48,7 @@ export class EcosystemPoolSharesService {
 			abi: ProtocolStablecoinABI,
 			functionName: 'balanceOf',
 			args: [ADDRESS[VIEM_CONFIG.chain.id].equity],
+			authorizationList: undefined,
 		});
 
 		const p = parseInt(fetchedPrice.toString()) / 1e18;

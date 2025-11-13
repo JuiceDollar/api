@@ -68,6 +68,7 @@ export class SavingsCoreService {
 					abi: SavingsGatewayABI,
 					functionName: 'accruedInterest',
 					args: [item.id],
+					authorizationList: undefined,
 				});
 
 				return {

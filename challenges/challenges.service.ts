@@ -185,6 +185,7 @@ export class ChallengesService {
 				address: ADDRESS[id].mintingHubGateway,
 				functionName: 'price',
 				args: [parseInt(c.number.toString())],
+				authorizationList: undefined,
 			});
 
 			challengesPrices[c.id] = price.toString();

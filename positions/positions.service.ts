@@ -140,6 +140,7 @@ export class PositionsService {
 			address: ADDRESS[CONFIG.chain.id].savingsGateway,
 			abi: SavingsABI,
 			functionName: 'currentRatePPM',
+			authorizationList: undefined,
 		});
 
 		for (const p of items) {
@@ -152,6 +153,7 @@ export class PositionsService {
 					abi: erc20Abi,
 					functionName: 'balanceOf',
 					args: [p.position],
+					authorizationList: undefined,
 				})
 			);
 
@@ -160,6 +162,7 @@ export class PositionsService {
 					address: p.position,
 					abi: PositionV2ABI,
 					functionName: 'virtualPrice',
+					authorizationList: undefined,
 				})
 			);
 
@@ -168,6 +171,7 @@ export class PositionsService {
 					address: p.position,
 					abi: PositionV2ABI,
 					functionName: 'getInterest',
+					authorizationList: undefined,
 				})
 			);
 

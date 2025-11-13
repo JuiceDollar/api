@@ -1,9 +1,9 @@
 import { ADDRESS } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
-import { COINGECKO_CLIENT, VIEM_CHAIN, VIEM_CONFIG } from 'api.config';
+import { COINGECKO_CLIENT, VIEM_CHAIN } from 'api.config';
 import { EcosystemPoolSharesService } from 'ecosystem/ecosystem.poolshares.service';
 import { PositionsService } from 'positions/positions.service';
-import { Address, formatUnits } from 'viem';
+import { Address } from 'viem';
 import {
 	ApiPriceERC20,
 	ApiPriceERC20Mapping,
@@ -16,12 +16,6 @@ import {
 } from './prices.types';
 
 const randRef: number = Math.random() * 0.4 + 0.8;
-
-enum ZchfEcosystem {
-	WFPS = '0x5052D3Cc819f53116641e89b96Ff4cD1EE80B182',
-	FPS = '0x1bA26788dfDe592fec8bcB0Eaff472a42BE341B2',
-	ZCHF = '0xB58E61C3098d85632Df34EecfB899A1Ed80921cB',
-}
 
 @Injectable()
 export class PricesService {
@@ -149,38 +143,9 @@ export class PricesService {
 		};
 	}
 
-	async fetchFromZchfSources(): Promise<PriceQueryCurrencies | null> {
-		const { FPS, ZCHF } = ZchfEcosystem;
-		const priceZchf = await this.fetchSourcesCoingecko({ address: ZCHF, name: 'ZCHF', symbol: 'ZCHF', decimals: 18 });
-		if (!priceZchf) return null;
-
-		const priceWfps = await VIEM_CONFIG.readContract({
-			address: FPS,
-			abi: [
-				{
-					inputs: [],
-					name: 'price',
-					outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-					stateMutability: 'view',
-					type: 'function',
-				},
-			],
-			functionName: 'price',
-			args: [],
-		});
-		if (!priceWfps) return null;
-
-		return { usd: priceZchf.usd * parseFloat(formatUnits(priceWfps, 18)) };
-	}
-
 	async fetchPrice(erc: ERC20Info): Promise<PriceQueryCurrencies | null> {
 		if (erc.address.toLowerCase() === ADDRESS[VIEM_CHAIN.id].equity.toLowerCase()) {
 			return this.fetchFromEcosystemSharePools(erc);
-		} else if (
-			erc.address.toLowerCase() === ZchfEcosystem.WFPS.toLowerCase() ||
-			erc.address.toLowerCase() === ZchfEcosystem.FPS.toLowerCase()
-		) {
-			return this.fetchFromZchfSources();
 		} else {
 			return this.fetchSourcesCoingecko(erc);
 		}

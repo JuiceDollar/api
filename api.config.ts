@@ -26,11 +26,10 @@ export type ConfigType = {
 		imagesDir: string;
 	};
 	twitter: {
-		clientId: string;
-		clientSecret: string;
+		accessToken: string;
+		accessSecret: string;
 		appKey: string;
 		appSecret: string;
-		tokenJson: string;
 		imagesDir: string;
 	};
 };
@@ -52,11 +51,10 @@ export const CONFIG: ConfigType = {
 		imagesDir: process.env.TELEGRAM_IMAGES_DIR,
 	},
 	twitter: {
-		clientId: process.env.TWITTER_CLIENT_ID,
-		clientSecret: process.env.TWITTER_CLIENT_SECRET,
 		appKey: process.env.TWITTER_CLIENT_APP_KEY,
 		appSecret: process.env.TWITTER_CLIENT_APP_SECRET,
-		tokenJson: process.env.TWITTER_TOKEN_JSON,
+		accessToken: process.env.TWITTER_ACCESS_TOKEN,
+		accessSecret: process.env.TWITTER_ACCESS_SECRET,
 		imagesDir: process.env.TWITTER_IMAGES_DIR,
 	},
 };

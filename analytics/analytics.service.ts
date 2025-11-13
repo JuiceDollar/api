@@ -31,18 +31,18 @@ export class AnalyticsService {
 		let positionsTheta: number = 0;
 		let positionsThetaPerToken: number = 0;
 
-		const minterReserveRaw = await VIEM_CONFIG.readContract({
+		const minterReserveRaw = (await VIEM_CONFIG.readContract({
 			address: ADDRESS[VIEM_CONFIG.chain.id].juiceDollar,
 			abi: ProtocolStablecoinABI,
 			functionName: 'minterReserve',
-		});
+		} as any)) as bigint;
 
-		const balanceReserveRaw = await VIEM_CONFIG.readContract({
+		const balanceReserveRaw = (await VIEM_CONFIG.readContract({
 			address: ADDRESS[VIEM_CONFIG.chain.id].juiceDollar,
 			abi: ProtocolStablecoinABI,
 			functionName: 'balanceOf',
 			args: [ADDRESS[VIEM_CONFIG.chain.id].equity],
-		});
+		} as any)) as bigint;
 
 		const equityInReserveRaw = balanceReserveRaw - minterReserveRaw;
 

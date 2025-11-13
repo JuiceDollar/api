@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { CONFIG, VIEM_CONFIG } from 'api.config';
+import { mainnet, testnet } from 'chains';
 import { ChallengesService } from 'challenges/challenges.service';
 import { EcosystemMinterService } from 'ecosystem/ecosystem.minter.service';
 import { EcosystemPoolSharesService } from 'ecosystem/ecosystem.poolshares.service';
@@ -11,12 +12,11 @@ import { SavingsCoreService } from 'savings/savings.core.service';
 import { SavingsLeadrateService } from 'savings/savings.leadrate.service';
 import { SocialMediaService } from 'socialmedia/socialmedia.service';
 import { Chain } from 'viem';
-import { mainnet, polygon } from 'viem/chains';
 
 export const INDEXING_TIMEOUT_COUNT: number = 3;
 export const POLLING_DELAY: { [key: Chain['id']]: number } = {
-	[mainnet.id]: 6_000, // blocktime: 12s
-	[polygon.id]: 12_000, // blocktime: 2s, skip: 6 blks
+	[mainnet.id]: 10_000, // blocktime: 10s
+	[testnet.id]: 10_000, // blocktime: 10s
 };
 
 @Injectable()
