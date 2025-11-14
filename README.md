@@ -43,6 +43,24 @@ $ yarn run start:prod
 $ npm publish --access public
 ```
 
+## Publishing Types Package
+
+This repository exports TypeScript type definitions that can be published to npm for use in other projects.
+
+### Building and Publishing
+
+1. **Build the project** (generates type definitions in `dist/`):
+
+```bash
+$ yarn build
+```
+
+2. **Publish to npm**:
+
+```bash
+$ npm publish --access public
+```
+
 ## License
 
 Nest is [MIT licensed](LICENSE).

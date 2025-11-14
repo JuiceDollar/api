@@ -7,6 +7,14 @@
 	"repository": {
 		"url": "git+https://github.com/JuiceDollar/api.git"
 	},
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist/**/*.d.ts",
+		"dist/**/*.js",
+		"README.md",
+		"LICENSE"
+	],
 	"scripts": {
 		"build": "nest build",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
