@@ -1,4 +1,4 @@
-import { CONFIG } from 'api.config';
+import { CONFIG, POOL_SHARES_SYMBOL, PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { createRefCode } from 'socialmedia/socialmedia.helper';
 import { TradeQuery } from 'trades/trade.types';
 import { formatCurrency } from 'utils/format';
@@ -16,10 +16,10 @@ export function TradeMessage(trade: TradeQuery, marketCap: number, totalShares: 
 	const price = Number(formatUnits(BigInt(trade.amount), 18)) / Number(formatUnits(BigInt(trade.shares), 18));
 
 	const message = `
-nDEPS/DEPS Invest!
+${POOL_SHARES_SYMBOL} Invest!
 
-➡️ Spent ${formatCurrency(formatUnits(BigInt(trade.amount), 18))} dEURO 
-⬅️ Got ${formatCurrency(formatUnits(BigInt(trade.shares), 18))} nDEPS
+➡️ Spent ${formatCurrency(formatUnits(BigInt(trade.amount), 18))} ${PROTOCOL_STABLECOIN_SYMBOL} 
+⬅️ Got ${formatCurrency(formatUnits(BigInt(trade.shares), 18))} ${POOL_SHARES_SYMBOL}
 🔗 Verifiable on the blockchain
 🪙 Position +${position.toFixed(2)}%
 🏷 Price ${formatCurrency(price)} €

@@ -1,4 +1,4 @@
-import { CONFIG } from 'api.config';
+import { CONFIG, PROTOCOL_STABLECOIN_NAME } from 'api.config';
 import { FrontendCodeRegisteredQuery } from 'frontendcode/frontendcode.types';
 import { createRefCode } from 'socialmedia/socialmedia.helper';
 
@@ -6,7 +6,7 @@ export function FrontendCodeRegisteredMessage(registered: FrontendCodeRegistered
 	const refCode = createRefCode(registered.frontendCode) ?? '';
 
 	const message = `
-New dEURO Ambassador
+New ${PROTOCOL_STABLECOIN_NAME} Ambassador
 
 ⚙️ Referral-Code: ${refCode}
 🔗 Verifiable on the blockchain

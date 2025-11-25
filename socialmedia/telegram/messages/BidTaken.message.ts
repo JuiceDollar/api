@@ -1,3 +1,4 @@
+import { PROTOCOL_STABLECOIN_SYMBOL } from 'api.config';
 import { BidsQueryItem, ChallengesQueryItem } from 'challenges/challenges.types';
 import { PositionQuery } from 'positions/positions.types';
 import { formatCurrency } from 'utils/format';
@@ -17,9 +18,9 @@ Bid Type: *${bid.bidType}*
 Collateral: ${position.collateralName} (${position.collateralSymbol})
 Challenge Size: ${formatCurrency(formatUnits(bid.challengeSize, position.collateralDecimals))} ${position.collateralSymbol}
 
-Bid Amount: ${formatCurrency(formatUnits(bid.bid, 18))} dEURO
+Bid Amount: ${formatCurrency(formatUnits(bid.bid, 18))} ${PROTOCOL_STABLECOIN_SYMBOL}
 Bid Filled: ${formatCurrency(formatUnits(bid.filledSize, position.collateralDecimals))} ${position.collateralSymbol}
-Bid Price: ${formatCurrency(formatUnits(bid.price, 36 - position.collateralDecimals))} dEURO/${position.collateralSymbol}
+Bid Price: ${formatCurrency(formatUnits(bid.price, 36 - position.collateralDecimals))} ${PROTOCOL_STABLECOIN_SYMBOL}/${position.collateralSymbol}
 
 [Buy ${position.collateralSymbol} in Auction](${AppUrl(`/challenges/${challenge.id}/bid`)})
 [Goto Position](${AppUrl(`/monitoring/${bid.position}`)})

@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, SavingsGatewayABI } from '@deuro/eurocoin';
+import { ADDRESS, SavingsGatewayABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { VIEM_CONFIG } from 'api.config';
@@ -68,6 +68,7 @@ export class SavingsCoreService {
 					abi: SavingsGatewayABI,
 					functionName: 'accruedInterest',
 					args: [item.id],
+					authorizationList: undefined,
 				});
 
 				return {

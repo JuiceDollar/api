@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { POOL_SHARES_SYMBOL } from 'api.config';
 import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceListing, ApiPriceMapping, PriceQueryCurrencies } from 'prices/prices.types';
 import { PricesService } from './prices.service';
 
@@ -32,12 +33,12 @@ export class PricesController {
 		return this.pricesService.getMint();
 	}
 
-	@Get('erc20/deps')
+	@Get('erc20/poolshares')
 	@ApiResponse({
-		description: 'Returns ERC20 information about the DEPS token',
+		description: `Returns ERC20 information about the ${POOL_SHARES_SYMBOL} token`,
 	})
-	getDeps(): ApiPriceERC20 {
-		return this.pricesService.getDeps();
+	getPoolShares(): ApiPriceERC20 {
+		return this.pricesService.getPoolShares();
 	}
 
 	@Get('erc20/collateral')
@@ -56,11 +57,11 @@ export class PricesController {
 		return this.pricesService.getEuroPrice();
 	}
 
-	@Get('deps')
+	@Get('poolshares')
 	@ApiResponse({
-		description: 'Returns the current price of the DEPS token',
+		description: `Returns the current price of the ${POOL_SHARES_SYMBOL} token`,
 	})
-	getDepsPrice(): Promise<PriceQueryCurrencies> {
-		return this.pricesService.getDepsPrice();
+	getPoolSharesPrice(): Promise<PriceQueryCurrencies> {
+		return this.pricesService.getPoolSharesPrice();
 	}
 }

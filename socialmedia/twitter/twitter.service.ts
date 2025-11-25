@@ -3,11 +3,9 @@ import { CONFIG } from 'api.config';
 import { StablecoinBridgeQuery } from 'bridge/bridge.types';
 import { EcosystemMintQueryItem } from 'ecosystem/ecosystem.stablecoin.types';
 import { FrontendCodeRegisteredQuery, FrontendCodeSavingsQuery } from 'frontendcode/frontendcode.types';
-import { readFileSync } from 'fs';
 import { SocialMediaFct, SocialMediaService } from 'socialmedia/socialmedia.service';
 import { TradeQuery } from 'trades/trade.types';
 import { SendTweetV2Params, TwitterApi } from 'twitter-api-v2';
-import { TwitterAccessToken } from './dtos/twitter.dto';
 import { FrontendCodeRegisteredMessage } from './messages/FrontendCodeRegistered.message';
 import { MintingUpdateMessage } from './messages/MintingUpdate.message';
 import { SavingUpdateMessage } from './messages/SavingUpdate.message';
@@ -20,20 +18,16 @@ export class TwitterService implements OnModuleInit, SocialMediaFct {
 
 	private client: TwitterApi;
 
-	private readonly tokenFile: string = CONFIG.twitter.tokenJson;
-
 	constructor(private readonly socialMediaService: SocialMediaService) {}
 
 	async onModuleInit() {
 		this.socialMediaService.register(this.constructor.name, this);
 
-		const token = await this.readToken();
-
 		this.client = new TwitterApi({
 			appKey: CONFIG.twitter.appKey,
 			appSecret: CONFIG.twitter.appSecret,
-			accessToken: token.access_token,
-			accessSecret: token.access_secret,
+			accessToken: CONFIG.twitter.accessToken,
+			accessSecret: CONFIG.twitter.accessSecret,
 		});
 	}
 
@@ -53,9 +47,9 @@ export class TwitterService implements OnModuleInit, SocialMediaFct {
 		await this.sendPost(messageInfo[0], messageInfo[1]);
 	}
 
-	async doSendTradeUpdates(trade: TradeQuery, depsMarketCap: number, totalShares: bigint): Promise<void> {
+	async doSendTradeUpdates(trade: TradeQuery, poolSharesMarketCap: number, totalShares: bigint): Promise<void> {
 		if (BigInt(trade.amount) === 0n) return;
-		const messageInfo = TradeMessage(trade, depsMarketCap, totalShares);
+		const messageInfo = TradeMessage(trade, poolSharesMarketCap, totalShares);
 		await this.sendPost(messageInfo[0], messageInfo[1]);
 	}
 
@@ -92,9 +86,5 @@ export class TwitterService implements OnModuleInit, SocialMediaFct {
 		} catch (e) {
 			this.logger.error('sendPost failed', e);
 		}
-	}
-
-	private async readToken(): Promise<TwitterAccessToken> {
-		return JSON.parse(readFileSync(this.tokenFile, 'utf-8')) as TwitterAccessToken;
 	}
 }

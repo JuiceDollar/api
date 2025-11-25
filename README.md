@@ -13,8 +13,8 @@ $ yarn install
 ```
 PORT=3000
 
-CONFIG_APP_URL=https://app.deuro.com
-CONFIG_INDEXER_URL=https://ponder.deuro.com
+CONFIG_APP_URL=https://app.juicedollar.com
+CONFIG_INDEXER_URL=https://ponder.juicedollar.com
 CONFIG_CHAIN=mainnet
 
 RPC_URL_MAINNET=https://eth-mainnet.g.alchemy.com/v2/[API-KEY]
@@ -40,6 +40,24 @@ $ yarn run start:dev
 $ yarn run start:prod
 
 # Publish NPM pkg (higher version) - needs login
+$ npm publish --access public
+```
+
+## Publishing Types Package
+
+This repository exports TypeScript type definitions that can be published to npm for use in other projects.
+
+### Building and Publishing
+
+1. **Build the project** (generates type definitions in `dist/`):
+
+```bash
+$ yarn build
+```
+
+2. **Publish to npm**:
+
+```bash
 $ npm publish --access public
 ```
 

@@ -6,7 +6,7 @@ export type PositionQuery = {
 
 	position: Address;
 	owner: Address;
-	deuro: Address;
+	stablecoinAddress: Address;
 	collateral: Address;
 	price: string;
 
@@ -26,9 +26,9 @@ export type PositionQuery = {
 	expiration: number;
 	challengePeriod: number;
 
-	deuroName: string;
-	deuroSymbol: string;
-	deuroDecimals: number;
+	stablecoinName: string;
+	stablecoinSymbol: string;
+	stablecoinDecimals: number;
 
 	collateralName: string;
 	collateralSymbol: string;

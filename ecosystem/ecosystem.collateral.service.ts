@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PositionsService } from 'positions/positions.service';
+import { PositionQuery } from 'positions/positions.types';
 import { PricesService } from 'prices/prices.service';
+import { ERC20Info, PriceQueryCurrencies } from 'prices/prices.types';
+import { FIVEDAYS_MS } from 'utils/const-helper';
+import { Address, formatUnits } from 'viem';
 import {
 	ApiEcosystemCollateralList,
 	ApiEcosystemCollateralListArray,
@@ -9,10 +13,6 @@ import {
 	ApiEcosystemCollateralStats,
 	ApiEcosystemCollateralStatsItem,
 } from './ecosystem.collateral.types';
-import { PositionQuery } from 'positions/positions.types';
-import { Address, formatUnits } from 'viem';
-import { FIVEDAYS_MS } from 'utils/const-helper';
-import { ERC20Info, PriceQueryCurrencies } from 'prices/prices.types';
 
 @Injectable()
 export class EcosystemCollateralService {
@@ -83,10 +83,10 @@ export class EcosystemCollateralService {
 		const collateralPositionsDetails = this.getCollateralPositionsDetails();
 		const prices = this.pricesService.getPricesMapping();
 
-		const deuroAddress = this.pricesService.getMint()?.address;
-		if (!deuroAddress) return null;
-		const deuroPrice = prices[deuroAddress.toLowerCase()]?.price?.usd as number;
-		if (!deuroPrice) return null;
+		const protocolStablecoinAddress = this.pricesService.getMint()?.address;
+		if (!protocolStablecoinAddress) return null;
+		const protocolStablecoinPrice = prices[protocolStablecoinAddress.toLowerCase()]?.price?.usd as number;
+		if (!protocolStablecoinPrice) return null;
 
 		const ecosystemTotalValueLocked: PriceQueryCurrencies = {};
 		const map: { [key: Address]: ApiEcosystemCollateralStatsItem } = {};
@@ -106,7 +106,7 @@ export class EcosystemCollateralService {
 			const totalBalanceNumUsd = parseInt(formatUnits(totalBalance, c.decimals)) * price;
 			const totalValueLocked: PriceQueryCurrencies = {
 				usd: totalBalanceNumUsd,
-				eur: totalBalanceNumUsd / deuroPrice,
+				eur: totalBalanceNumUsd / protocolStablecoinPrice,
 			};
 
 			// upsert ecosystemTotalValueLocked usd
@@ -142,7 +142,7 @@ export class EcosystemCollateralService {
 				totalValueLocked,
 				price: {
 					usd: price,
-					eur: Math.round((price / deuroPrice) * 100) / 100,
+					eur: Math.round((price / protocolStablecoinPrice) * 100) / 100,
 				},
 			};
 		}
