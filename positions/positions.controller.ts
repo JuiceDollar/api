@@ -3,6 +3,7 @@ import { PositionsService } from './positions.service';
 import {
 	ApiMintingUpdateListing,
 	ApiMintingUpdateMapping,
+	ApiPositionDefault,
 	ApiPositionsListing,
 	ApiPositionsMapping,
 	ApiPositionsOwners,
@@ -13,6 +14,14 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 @Controller('positions')
 export class PositionsController {
 	constructor(private readonly positionsService: PositionsService) {}
+
+	@Get('default')
+	@ApiResponse({
+		description: 'Returns the default position for native coin minting',
+	})
+	getDefault(): ApiPositionDefault {
+		return this.positionsService.getDefaultPosition();
+	}
 
 	@Get('list')
 	@ApiResponse({
