@@ -8,6 +8,7 @@ import { CONFIG, VIEM_CONFIG } from '../api.config';
 import {
 	ApiMintingUpdateListing,
 	ApiMintingUpdateMapping,
+	ApiPositionDefault,
 	ApiPositionsListing,
 	ApiPositionsMapping,
 	ApiPositionsOwners,
@@ -18,6 +19,22 @@ import {
 	PositionsQueryObjectArray,
 } from './positions.types';
 
+// Hardcoded default position for native coin minting (WcBTC)
+// Values fetched from blockchain at 0x03a7A7c133008658B746e6ef7836D493BE9B72f7
+// TODO: Make this dynamic in a future update
+const DEFAULT_POSITION: ApiPositionDefault = {
+	position: '0x03a7A7c133008658B746e6ef7836D493BE9B72f7' as Address,
+	collateral: '0x8d0c9d1c17aE5e40ffF9bE350f57840E9E66Cd93' as Address, // WCBTC on Citrea Testnet
+	collateralSymbol: 'WCBTC',
+	collateralDecimals: 18,
+	price: '500000000000000000000000000',
+	minimumCollateral: '10000000000000', // 0.00001 WCBTC
+	availableForClones: '994975446998993918277164200',
+	expiration: 1794782602, // 2026-11-15
+	reserveContribution: 200000, // 20%
+	annualInterestPPM: 30000, // 3% (riskPremiumPPM, leadrate will be added dynamically)
+};
+
 @Injectable()
 export class PositionsService {
 	private readonly logger = new Logger(this.constructor.name);
@@ -26,6 +43,10 @@ export class PositionsService {
 	private fetchedMintingUpdates: MintingUpdateQueryObjectArray = {};
 
 	constructor() {}
+
+	getDefaultPosition(): ApiPositionDefault {
+		return DEFAULT_POSITION;
+	}
 
 	getPositionsList(): ApiPositionsListing {
 		const pos = Object.values(this.fetchedPositions) as PositionQuery[];
