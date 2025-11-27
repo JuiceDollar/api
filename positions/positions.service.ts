@@ -29,6 +29,7 @@ const DEFAULT_POSITION: ApiPositionDefault = {
 	collateralDecimals: 18,
 	price: '50000000000000000000000', // 50'000 JUSD per WCBTC
 	minimumCollateral: '2000000000000000', // 0.002 WCBTC
+	availableForClones: '99999800000000000000001000',
 	expiration: 1795743987, // 2026-11-26
 	reserveContribution: 200000, // 20%
 	annualInterestPPM: 110000, // 11% (riskPremiumPPM, leadrate will be added dynamically)
@@ -47,7 +48,7 @@ export class PositionsService {
 		const cached = this.fetchedPositions[DEFAULT_POSITION.position.toLowerCase() as Address];
 		return {
 			...DEFAULT_POSITION,
-			availableForClones: cached.availableForClones,
+			availableForClones: cached?.availableForClones ?? DEFAULT_POSITION.availableForClones,
 		};
 	}
 
