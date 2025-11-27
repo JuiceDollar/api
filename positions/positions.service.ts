@@ -45,7 +45,11 @@ export class PositionsService {
 	constructor() {}
 
 	getDefaultPosition(): ApiPositionDefault {
-		return DEFAULT_POSITION;
+		const cached = this.fetchedPositions[DEFAULT_POSITION.position.toLowerCase() as Address];
+		return {
+			...DEFAULT_POSITION,
+			availableForClones: cached?.availableForClones ?? DEFAULT_POSITION.availableForClones,
+		};
 	}
 
 	getPositionsList(): ApiPositionsListing {
