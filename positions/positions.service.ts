@@ -19,20 +19,20 @@ import {
 	PositionsQueryObjectArray,
 } from './positions.types';
 
-// Hardcoded default position for native coin minting (WcBTC)
-// Values fetched from blockchain at 0x03a7A7c133008658B746e6ef7836D493BE9B72f7
+// Hardcoded default position for native coin minting (WCBTC)
+// Values fetched from blockchain at 0x0B2C4886639aEF7BE38CA5c1f943c7aff9Bc884b
 // TODO: Make this dynamic in a future update
 const DEFAULT_POSITION: ApiPositionDefault = {
-	position: '0x03a7A7c133008658B746e6ef7836D493BE9B72f7' as Address,
+	position: '0x0B2C4886639aEF7BE38CA5c1f943c7aff9Bc884b' as Address,
 	collateral: '0x8d0c9d1c17aE5e40ffF9bE350f57840E9E66Cd93' as Address, // WCBTC on Citrea Testnet
 	collateralSymbol: 'WCBTC',
 	collateralDecimals: 18,
-	price: '500000000000000000000000000',
-	minimumCollateral: '10000000000000', // 0.00001 WCBTC
-	availableForClones: '994975446998993918277164200',
-	expiration: 1794782602, // 2026-11-15
+	price: '50000000000000000000000', // 50'000 JUSD per WCBTC
+	minimumCollateral: '2000000000000000', // 0.002 WCBTC
+	availableForClones: '99999800000000000000001000',
+	expiration: 1795743987, // 2026-11-26
 	reserveContribution: 200000, // 20%
-	annualInterestPPM: 30000, // 3% (riskPremiumPPM, leadrate will be added dynamically)
+	annualInterestPPM: 110000, // 11% (riskPremiumPPM, leadrate will be added dynamically)
 };
 
 @Injectable()
