@@ -902,10 +902,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@juicedollar/jusd@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-1.0.2.tgz#a6b02599c8c990f30c24096ba989f5cfb90cff4d"
-  integrity sha512-QMVoedo6z1Ow6nDu6M5IFFKg9yHEkTAVyY4Y6d54os59cChJlDDrhKjolo5XGO2gb1F7J2rhW6cFV+ARceU1dQ==
+"@juicedollar/jusd@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-1.0.4.tgz#898fd0bd56aceb7d8243973a146940e280da75c8"
+  integrity sha512-MbWPptrX1HiDim8aRBHkH51UhaeyUVQ/aPDeEoaQHnJwWJ25ApPxNjGbNA17cg94Fh1gptPeYXemCWD0SqwR5Q==
   dependencies:
     "@openzeppelin/contracts" "^5.1.0"
     hardhat-abi-exporter "^2.10.0"
