@@ -23,16 +23,16 @@ import {
 // Values fetched from blockchain at 0xc7Cfb0708aC6ADC81f64ED2793b212bb6AE438aE
 // TODO: Make this dynamic in a future update
 const DEFAULT_POSITION: ApiPositionDefault = {
-	position: '0xc7Cfb0708aC6ADC81f64ED2793b212bb6AE438aE' as Address,
+	position: '0xc7Cfb0708aC6ADc81f64ED2793b212bb6AE438aE' as Address,
 	collateral: '0x8d0c9d1c17aE5e40ffF9bE350f57840E9E66Cd93' as Address, // WCBTC on Citrea Testnet
 	collateralSymbol: 'WCBTC',
 	collateralDecimals: 18,
 	price: '50000000000000000000000', // 50'000 JUSD per WCBTC
 	minimumCollateral: '2000000000000000', // 0.002 WCBTC
-	availableForClones: '10000000000000000000000000',
-	expiration: 1795743987, // 2026-11-26
+	availableForClones: '100000000000000000000000000',
+	expiration: 1796307151, // 2026-12-03
 	reserveContribution: 200000, // 20%
-	annualInterestPPM: 110000, // 11% (riskPremiumPPM, leadrate will be added dynamically)
+	annualInterestPPM: 100000, // 10% (riskPremiumPPM, leadrate will be added dynamically)
 };
 
 @Injectable()
