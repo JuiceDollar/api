@@ -19,7 +19,7 @@ export class PositionsController {
 	@ApiResponse({
 		description: 'Returns the default position for native coin minting',
 	})
-	getDefault(): ApiPositionDefault {
+	getDefault(): ApiPositionDefault | null {
 		return this.positionsService.getDefaultPosition();
 	}
 

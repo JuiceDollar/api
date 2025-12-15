@@ -19,21 +19,8 @@ import {
 	PositionsQueryObjectArray,
 } from './positions.types';
 
-// Hardcoded default position for native coin minting (WCBTC)
-// Values fetched from blockchain at 0xE2D4Ca089457ECfabF89F472568eac4e94b21d8C
-// TODO: Make this dynamic in a future update
-const DEFAULT_POSITION: ApiPositionDefault = {
-	position: '0xE2D4Ca089457ECfabF89F472568eac4e94b21d8C' as Address,
-	collateral: '0x8d0c9d1c17aE5e40ffF9bE350f57840E9E66Cd93' as Address, // WCBTC on Citrea Testnet
-	collateralSymbol: 'WCBTC',
-	collateralDecimals: 18,
-	price: '50000000000000000000000', // 50'000 JUSD per WCBTC
-	minimumCollateral: '2000000000000000', // 0.002 WCBTC
-	availableForClones: '100000000000000000000000000',
-	expiration: 1797334468, // 2026-12-15
-	reserveContribution: 200000, // 20%
-	annualInterestPPM: 100000, // 10%
-};
+// Genesis position address from NPM package
+const GENESIS_POSITION = ADDRESS[CONFIG.chain.id].genesisPosition as Address;
 
 @Injectable()
 export class PositionsService {
@@ -44,11 +31,20 @@ export class PositionsService {
 
 	constructor() {}
 
-	getDefaultPosition(): ApiPositionDefault {
-		const cached = this.fetchedPositions[DEFAULT_POSITION.position.toLowerCase() as Address];
+	getDefaultPosition(): ApiPositionDefault | null {
+		const cached = this.fetchedPositions[GENESIS_POSITION.toLowerCase() as Address];
+		if (!cached) return null;
 		return {
-			...DEFAULT_POSITION,
-			availableForClones: cached?.availableForClones ?? DEFAULT_POSITION.availableForClones,
+			position: cached.position,
+			collateral: cached.collateral,
+			collateralSymbol: cached.collateralSymbol,
+			collateralDecimals: cached.collateralDecimals,
+			price: cached.price,
+			minimumCollateral: cached.minimumCollateral,
+			availableForClones: cached.availableForClones,
+			expiration: cached.expiration,
+			reserveContribution: cached.reserveContribution,
+			annualInterestPPM: cached.annualInterestPPM,
 		};
 	}
 
