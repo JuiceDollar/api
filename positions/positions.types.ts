@@ -117,3 +117,16 @@ export type ApiMintingUpdateMapping = {
 	positions: Address[];
 	map: MintingUpdateQueryObjectArray;
 };
+
+export type ApiPositionDefault = {
+	position: Address;
+	collateral: Address;
+	collateralSymbol: string;
+	collateralDecimals: number;
+	price: string;
+	minimumCollateral: string;
+	availableForClones: string;
+	expiration: number;
+	reserveContribution: number;
+	annualInterestPPM: number;
+};

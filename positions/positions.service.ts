@@ -8,6 +8,7 @@ import { CONFIG, VIEM_CONFIG } from '../api.config';
 import {
 	ApiMintingUpdateListing,
 	ApiMintingUpdateMapping,
+	ApiPositionDefault,
 	ApiPositionsListing,
 	ApiPositionsMapping,
 	ApiPositionsOwners,
@@ -18,6 +19,9 @@ import {
 	PositionsQueryObjectArray,
 } from './positions.types';
 
+// Genesis position address from NPM package
+const GENESIS_POSITION = ADDRESS[CONFIG.chain.id].genesisPosition as Address;
+
 @Injectable()
 export class PositionsService {
 	private readonly logger = new Logger(this.constructor.name);
@@ -26,6 +30,23 @@ export class PositionsService {
 	private fetchedMintingUpdates: MintingUpdateQueryObjectArray = {};
 
 	constructor() {}
+
+	getDefaultPosition(): ApiPositionDefault | null {
+		const cached = this.fetchedPositions[GENESIS_POSITION.toLowerCase() as Address];
+		if (!cached) return null;
+		return {
+			position: cached.position,
+			collateral: cached.collateral,
+			collateralSymbol: cached.collateralSymbol,
+			collateralDecimals: cached.collateralDecimals,
+			price: cached.price,
+			minimumCollateral: cached.minimumCollateral,
+			availableForClones: cached.availableForClones,
+			expiration: cached.expiration,
+			reserveContribution: cached.reserveContribution,
+			annualInterestPPM: cached.annualInterestPPM,
+		};
+	}
 
 	getPositionsList(): ApiPositionsListing {
 		const pos = Object.values(this.fetchedPositions) as PositionQuery[];
