@@ -45,6 +45,7 @@ export class PositionsService {
 			expiration: cached.expiration,
 			reserveContribution: cached.reserveContribution,
 			annualInterestPPM: cached.annualInterestPPM,
+			principal: cached.principal,
 		};
 	}
 
