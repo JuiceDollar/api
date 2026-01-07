@@ -129,4 +129,5 @@ export type ApiPositionDefault = {
 	expiration: number;
 	reserveContribution: number;
 	annualInterestPPM: number;
+	principal: string;
 };
