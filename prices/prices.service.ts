@@ -69,7 +69,7 @@ export class PricesService {
 			this.poolSharesPrice = await this.fetchFromEcosystemSharePools(this.getPoolShares());
 		}
 		return {
-			usd: Number(this.poolSharesPrice.usd?.toFixed(4) || 0),
+			usd: Number(this.poolSharesPrice?.usd?.toFixed(4) || 0),
 		};
 	}
 
