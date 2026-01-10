@@ -17,6 +17,16 @@ import {
 
 const randRef: number = Math.random() * 0.4 + 0.8;
 
+// Mapping of testnet token symbols to Coingecko IDs for real price fetching
+const TESTNET_COINGECKO_MAPPING: Record<string, string | null> = {
+	WCBTC: 'bitcoin',
+	WBTC: 'wrapped-bitcoin',
+	WETH: 'ethereum',
+	ETH: 'ethereum',
+	BTC: 'bitcoin',
+	JUSD: null, // Stablecoin, use hardcoded $1
+};
+
 @Injectable()
 export class PricesService {
 	private readonly logger = new Logger(this.constructor.name);
@@ -117,14 +127,24 @@ export class PricesService {
 			}
 			return Object.values(data)[0] as { usd: number; eur: number };
 		} else {
-			// all other chain addresses (test deployments)
-			const calc = (value: number) => {
-				const ref: number = 1718033809979;
-				return value * randRef * (1 + ((Date.now() - ref) / (3600 * 24 * 365)) * 0.001 + Math.random() * 0.01);
-			};
-			// @dev: this is just for testnet soft price mapping
-			let price = { usd: calc(1) };
-			return price;
+			// Testnet: Map token symbols to real Coingecko prices
+			const coingeckoId = TESTNET_COINGECKO_MAPPING[erc.symbol.toUpperCase()];
+
+			if (coingeckoId) {
+				try {
+					const url = `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd,eur`;
+					const data = await (await COINGECKO_CLIENT(url)).json();
+					if (data[coingeckoId]) {
+						this.logger.debug(`Fetched real price for ${erc.symbol} via ${coingeckoId}: $${data[coingeckoId].usd}`);
+						return data[coingeckoId];
+					}
+				} catch (error) {
+					this.logger.debug(`Failed to fetch price for ${erc.symbol}, using fallback`);
+				}
+			}
+
+			// Fallback for stablecoins and unknown tokens
+			return { usd: 1, eur: 0.85 };
 		}
 	}
 
