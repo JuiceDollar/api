@@ -144,11 +144,23 @@ export class PricesService {
 		this.logger.debug('Updating Prices');
 
 		const poolShares = this.getPoolShares();
-		const m = this.getMint();
+		const mint = this.getMint();
 		const c = this.getCollateral();
 
-		if (!m || Object.values(c).length == 0) return;
-		const a = [poolShares, m, ...Object.values(c)];
+		if (!mint || Object.values(c).length == 0) return;
+
+		// JUSD is always $1 (stablecoin) - no need to fetch from Coingecko
+		const mintAddr = mint.address.toLowerCase() as Address;
+		if (!this.fetchedPrices[mintAddr]) {
+			this.fetchedPrices[mintAddr] = {
+				...mint,
+				timestamp: Date.now(),
+				price: { usd: 1 },
+			};
+		}
+
+		// Only fetch prices for poolShares and collateral tokens
+		const a = [poolShares, ...Object.values(c)];
 
 		const pricesQuery: PriceQueryObjectArray = {};
 		let pricesQueryNewCount: number = 0;
