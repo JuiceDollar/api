@@ -133,19 +133,20 @@ export class PricesService {
 
 			if (coingeckoId) {
 				try {
-					const url = `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd,eur`;
+					const url = `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
 					const data = await (await COINGECKO_CLIENT(url)).json();
-					if (data[coingeckoId]) {
+					if (data[coingeckoId]?.usd) {
 						this.logger.debug(`Fetched real price for ${erc.symbol} via ${coingeckoId}: $${data[coingeckoId].usd}`);
-						return data[coingeckoId];
+						// Only return USD - the 'eur' field (JUSD price) is calculated in updatePrices()
+						return { usd: data[coingeckoId].usd };
 					}
 				} catch (error) {
 					this.logger.warn(`Failed to fetch price for ${erc.symbol}: ${error.message || error}`);
 				}
 			}
 
-			// Fallback for stablecoins and unknown tokens
-			return { usd: 1, eur: 0.85 };
+			// Fallback for stablecoins and unknown tokens (eur/JUSD price calculated in updatePrices)
+			return { usd: 1 };
 		}
 	}
 
