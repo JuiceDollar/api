@@ -85,8 +85,7 @@ export class EcosystemCollateralService {
 
 		const protocolStablecoinAddress = this.pricesService.getMint()?.address;
 		if (!protocolStablecoinAddress) return null;
-		const protocolStablecoinPrice = prices[protocolStablecoinAddress.toLowerCase()]?.price?.usd as number;
-		if (!protocolStablecoinPrice) return null;
+		if (!prices[protocolStablecoinAddress.toLowerCase()]?.price?.usd) return null;
 
 		const ecosystemTotalValueLocked: PriceQueryCurrencies = {};
 		const map: { [key: Address]: ApiEcosystemCollateralStatsItem } = {};
@@ -106,7 +105,6 @@ export class EcosystemCollateralService {
 			const totalBalanceNumUsd = parseInt(formatUnits(totalBalance, c.decimals)) * price;
 			const totalValueLocked: PriceQueryCurrencies = {
 				usd: totalBalanceNumUsd,
-				eur: totalBalanceNumUsd / protocolStablecoinPrice,
 			};
 
 			// upsert ecosystemTotalValueLocked usd
@@ -114,13 +112,6 @@ export class EcosystemCollateralService {
 				ecosystemTotalValueLocked.usd = totalValueLocked.usd;
 			} else {
 				ecosystemTotalValueLocked.usd += totalValueLocked.usd;
-			}
-
-			// upsert ecosystemTotalValueLocked eur
-			if (!ecosystemTotalValueLocked.eur) {
-				ecosystemTotalValueLocked.eur = totalValueLocked.eur;
-			} else {
-				ecosystemTotalValueLocked.eur += totalValueLocked.eur;
 			}
 
 			// upsert map
@@ -142,7 +133,6 @@ export class EcosystemCollateralService {
 				totalValueLocked,
 				price: {
 					usd: price,
-					eur: Math.round((price / protocolStablecoinPrice) * 100) / 100,
 				},
 			};
 		}

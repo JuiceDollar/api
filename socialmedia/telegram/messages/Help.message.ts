@@ -5,9 +5,9 @@ export function HelpMessage(groups: string[], group: string, handles: string[]):
 	const isSubscribed = groups.includes(group);
 
 	return `
-*Welcome to the d-EURO API Bot*
+*Welcome to the JuiceDollar API Bot*
 
-I am listening to changes within the d-EURO ecosystem.
+I am listening to changes within the JuiceDollar ecosystem.
 
 *Available commands:*
 ${handles.join('\n')}
@@ -21,6 +21,6 @@ Chain/Network: ${CONFIG.chain.name} (${CONFIG.chain.id})
 Time: ${new Date().toString().split(' ').slice(0, 5).join(' ')}
 
 [Goto App](${AppUrl('')})
-[Github Api](https://github.com/d-EURO/api)
+[Github Api](https://github.com/JuiceDollar/api)
 `;
 }

@@ -3,9 +3,9 @@ import { AppUrl } from 'utils/func-helper';
 
 export function StartUpMessage(handles: string[]): string {
 	return `
-*Hello again, from the d-EURO API Bot!*
+*Hello again, from the JuiceDollar API Bot!*
 
-I have updated and restarted and am back online, listening to changes within the d-EURO ecosystem.
+I have updated and restarted and am back online, listening to changes within the JuiceDollar ecosystem.
 
 *Available subscription handles:*
 ${handles.join('\n')}
@@ -16,6 +16,6 @@ Chain/Network: ${CONFIG.chain.name} (${CONFIG.chain.id})
 Time: ${new Date().toString().split(' ').slice(0, 5).join(' ')}
 
 [Goto App](${AppUrl('')})
-[Github Api](https://github.com/d-EURO/api)
+[Github Api](https://github.com/JuiceDollar/api)
 `;
 }
