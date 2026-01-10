@@ -107,8 +107,12 @@ export class PricesService {
 				this.logger.debug(data.status?.error_message || 'Error fetching price from coingecko');
 				return null;
 			}
-			const result = Object.values(data)[0] as { usd: number };
-			return { usd: result?.usd };
+			const result = Object.values(data)[0] as { usd: number } | undefined;
+			if (!result?.usd) {
+				this.logger.warn(`No price data from Coingecko for ${erc.symbol} (${erc.address})`);
+				return null;
+			}
+			return { usd: result.usd };
 		} else {
 			// Testnet: Map token symbols to real Coingecko prices
 			const symbol = erc.symbol?.toUpperCase();
@@ -176,12 +180,12 @@ export class PricesService {
 				pricesQueryNewCount += 1;
 				this.logger.debug(`Price for ${erc.name} not available, trying to fetch...`);
 				const price = await this.fetchPrice(erc);
-				if (!price) pricesQueryNewCountFailed += 1;
+				if (!price?.usd) pricesQueryNewCountFailed += 1;
 
 				pricesQuery[addr] = {
 					...erc,
-					timestamp: price === null ? 0 : Date.now(),
-					price: price === null ? { usd: 1 } : price,
+					timestamp: price?.usd ? Date.now() : 0,
+					price: price?.usd ? price : { usd: 1 },
 				};
 			} else if (oldEntry.timestamp + 300_000 < Date.now()) {
 				// needs to update => try to fetch
@@ -189,7 +193,7 @@ export class PricesService {
 				this.logger.debug(`Price for ${erc.name} out of date, trying to fetch...`);
 				const price = await this.fetchPrice(erc);
 
-				if (!price) {
+				if (!price?.usd) {
 					pricesQueryUpdateCountFailed += 1;
 				} else {
 					pricesQuery[addr] = {
