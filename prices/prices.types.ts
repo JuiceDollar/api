@@ -13,10 +13,8 @@ export type ERC20Info = {
 	decimals: number;
 };
 
-// TODO: Implement other currencies
 export type PriceQueryCurrencies = {
 	usd?: number;
-	eur?: number;
 	btc?: number;
 };
 

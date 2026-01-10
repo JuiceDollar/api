@@ -106,7 +106,6 @@ export class EcosystemCollateralService {
 			const totalBalanceNumUsd = parseInt(formatUnits(totalBalance, c.decimals)) * price;
 			const totalValueLocked: PriceQueryCurrencies = {
 				usd: totalBalanceNumUsd,
-				eur: totalBalanceNumUsd / protocolStablecoinPrice,
 			};
 
 			// upsert ecosystemTotalValueLocked usd
@@ -114,13 +113,6 @@ export class EcosystemCollateralService {
 				ecosystemTotalValueLocked.usd = totalValueLocked.usd;
 			} else {
 				ecosystemTotalValueLocked.usd += totalValueLocked.usd;
-			}
-
-			// upsert ecosystemTotalValueLocked eur
-			if (!ecosystemTotalValueLocked.eur) {
-				ecosystemTotalValueLocked.eur = totalValueLocked.eur;
-			} else {
-				ecosystemTotalValueLocked.eur += totalValueLocked.eur;
 			}
 
 			// upsert map
@@ -142,7 +134,6 @@ export class EcosystemCollateralService {
 				totalValueLocked,
 				price: {
 					usd: price,
-					eur: Math.round((price / protocolStablecoinPrice) * 100) / 100,
 				},
 			};
 		}

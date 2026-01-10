@@ -29,7 +29,6 @@ const TESTNET_COINGECKO_MAPPING: Record<string, string | null> = {
 export class PricesService {
 	private readonly logger = new Logger(this.constructor.name);
 	private fetchedPrices: PriceQueryObjectArray = {};
-	private euroPrice: PriceQueryCurrencies = {};
 	private poolSharesPrice: PriceQueryCurrencies = {};
 
 	constructor(
@@ -66,13 +65,11 @@ export class PricesService {
 	}
 
 	async getPoolSharesPrice(): Promise<PriceQueryCurrencies> {
-		if (!this.poolSharesPrice) this.poolSharesPrice = await this.fetchFromEcosystemSharePools(this.getPoolShares());
-		if (!this.euroPrice) this.euroPrice = await this.fetchEuroPrice();
-
+		if (!this.poolSharesPrice?.usd) {
+			this.poolSharesPrice = await this.fetchFromEcosystemSharePools(this.getPoolShares());
+		}
 		return {
-			usd: Number(this.poolSharesPrice.usd.toFixed(4)),
-			eur: Number(this.poolSharesPrice.eur.toFixed(4)),
-			btc: Number((this.poolSharesPrice.eur * this.euroPrice.btc).toFixed(9)),
+			usd: Number(this.poolSharesPrice.usd?.toFixed(4) || 0),
 		};
 	}
 
@@ -92,38 +89,26 @@ export class PricesService {
 		return c;
 	}
 
-	async getEuroPrice(): Promise<PriceQueryCurrencies> {
-		if (!this.euroPrice) this.euroPrice = await this.fetchEuroPrice();
-
-		return {
-			usd: Number(this.euroPrice.usd.toFixed(4)),
-			eur: Number(this.euroPrice.eur.toFixed(4)),
-			btc: Number(this.euroPrice.btc.toFixed(9)),
-		};
-	}
-
 	async fetchFromEcosystemSharePools(erc: ERC20Info): Promise<PriceQueryCurrencies | null> {
 		const price = this.poolShares.getEcosystemPoolSharesInfo()?.values?.price;
 		if (!price) return null;
 
-		const protocolStablecoinAddress = ADDRESS[VIEM_CHAIN.id].juiceDollar.toLowerCase();
-		const quote = this.euroPrice?.usd || this.fetchedPrices[protocolStablecoinAddress]?.price?.usd;
-		const usdPrice = quote ? price * quote : price;
-
-		this.poolSharesPrice = { usd: usdPrice, eur: price };
+		// Price from ecosystem is already in JUSD, which equals USD (1 JUSD = 1 USD)
+		this.poolSharesPrice = { usd: price };
 		return this.poolSharesPrice;
 	}
 
 	async fetchSourcesCoingecko(erc: ERC20Info): Promise<PriceQueryCurrencies | null> {
 		// all mainnet addresses
 		if ((VIEM_CHAIN.id as number) === 1) {
-			const url = `/api/v3/simple/token_price/ethereum?contract_addresses=${erc.address}&vs_currencies=usd%2Ceur`;
+			const url = `/api/v3/simple/token_price/ethereum?contract_addresses=${erc.address}&vs_currencies=usd`;
 			const data = await (await COINGECKO_CLIENT(url)).json();
 			if (data.status) {
 				this.logger.debug(data.status?.error_message || 'Error fetching price from coingecko');
 				return null;
 			}
-			return Object.values(data)[0] as { usd: number; eur: number };
+			const result = Object.values(data)[0] as { usd: number };
+			return { usd: result?.usd };
 		} else {
 			// Testnet: Map token symbols to real Coingecko prices
 			const symbol = erc.symbol?.toUpperCase();
@@ -135,7 +120,6 @@ export class PricesService {
 					const data = await (await COINGECKO_CLIENT(url)).json();
 					if (data[coingeckoId]?.usd) {
 						this.logger.debug(`Fetched real price for ${erc.symbol} via ${coingeckoId}: $${data[coingeckoId].usd}`);
-						// Only return USD - the 'eur' field (JUSD price) is calculated in updatePrices()
 						return { usd: data[coingeckoId].usd };
 					}
 				} catch (error) {
@@ -143,24 +127,9 @@ export class PricesService {
 				}
 			}
 
-			// Fallback for stablecoins and unknown tokens (eur/JUSD price calculated in updatePrices)
+			// Fallback for stablecoins and unknown tokens
 			return { usd: 1 };
 		}
-	}
-
-	async fetchEuroPrice(): Promise<PriceQueryCurrencies | null> {
-		const url = `/api/v3/simple/price?ids=usd&vs_currencies=eur%2Cbtc`;
-		const data = await (await COINGECKO_CLIENT(url)).json();
-		if (data.status) {
-			this.logger.debug(data.status?.error_message || 'Error fetching price from coingecko');
-			return null;
-		}
-
-		return {
-			eur: 1,
-			usd: 1 / Number(data.usd.eur),
-			btc: 1 / Number(data.usd.eur / data.usd.btc),
-		};
 	}
 
 	async fetchPrice(erc: ERC20Info): Promise<PriceQueryCurrencies | null> {
@@ -173,9 +142,6 @@ export class PricesService {
 
 	async updatePrices() {
 		this.logger.debug('Updating Prices');
-
-		const euroPrice = await this.fetchEuroPrice();
-		if (euroPrice) this.euroPrice = euroPrice;
 
 		const poolShares = this.getPoolShares();
 		const m = this.getMint();
@@ -219,17 +185,6 @@ export class PricesService {
 						timestamp: Date.now(),
 						price,
 					};
-				}
-			}
-
-			const protocolStablecoinPrice: number =
-				this.euroPrice?.usd || this.fetchedPrices[ADDRESS[VIEM_CHAIN.id].juiceDollar.toLowerCase()]?.price?.usd;
-
-			if (protocolStablecoinPrice) {
-				const priceUsd = pricesQuery[addr]?.price?.usd;
-				const priceEur = pricesQuery[addr]?.price?.eur;
-				if (priceUsd && !priceEur) {
-					pricesQuery[addr].price.eur = Math.round((priceUsd / protocolStablecoinPrice) * 100) / 100;
 				}
 			}
 		}
