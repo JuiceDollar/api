@@ -15,8 +15,6 @@ import {
 	PriceQueryObjectArray,
 } from './prices.types';
 
-const randRef: number = Math.random() * 0.4 + 0.8;
-
 // Mapping of testnet token symbols to Coingecko IDs for real price fetching
 const TESTNET_COINGECKO_MAPPING: Record<string, string | null> = {
 	WCBTC: 'bitcoin',
