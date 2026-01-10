@@ -128,7 +128,8 @@ export class PricesService {
 			return Object.values(data)[0] as { usd: number; eur: number };
 		} else {
 			// Testnet: Map token symbols to real Coingecko prices
-			const coingeckoId = TESTNET_COINGECKO_MAPPING[erc.symbol.toUpperCase()];
+			const symbol = erc.symbol?.toUpperCase();
+			const coingeckoId = symbol ? TESTNET_COINGECKO_MAPPING[symbol] : null;
 
 			if (coingeckoId) {
 				try {
@@ -139,7 +140,7 @@ export class PricesService {
 						return data[coingeckoId];
 					}
 				} catch (error) {
-					this.logger.debug(`Failed to fetch price for ${erc.symbol}, using fallback`);
+					this.logger.warn(`Failed to fetch price for ${erc.symbol}: ${error.message || error}`);
 				}
 			}
 
