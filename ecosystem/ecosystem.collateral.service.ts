@@ -85,8 +85,7 @@ export class EcosystemCollateralService {
 
 		const protocolStablecoinAddress = this.pricesService.getMint()?.address;
 		if (!protocolStablecoinAddress) return null;
-		const protocolStablecoinPrice = prices[protocolStablecoinAddress.toLowerCase()]?.price?.usd as number;
-		if (!protocolStablecoinPrice) return null;
+		if (!prices[protocolStablecoinAddress.toLowerCase()]?.price?.usd) return null;
 
 		const ecosystemTotalValueLocked: PriceQueryCurrencies = {};
 		const map: { [key: Address]: ApiEcosystemCollateralStatsItem } = {};

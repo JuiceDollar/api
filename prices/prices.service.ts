@@ -18,7 +18,7 @@ import {
 // Mapping of testnet token symbols to Coingecko IDs for real price fetching
 const TESTNET_COINGECKO_MAPPING: Record<string, string | null> = {
 	WCBTC: 'bitcoin',
-	WBTC: 'wrapped-bitcoin',
+	WBTC: 'bitcoin',
 	WETH: 'ethereum',
 	ETH: 'ethereum',
 	BTC: 'bitcoin',
