@@ -12,15 +12,14 @@ export const testnet = defineChain({
 	},
 });
 
-// Juice Mainnet - To define later, same as testnet for now
 export const mainnet = defineChain({
-	id: 62831,
+	id: 4114,
 	name: 'Mainnet',
 	nativeCurrency: { name: 'cBTC', symbol: 'cBTC', decimals: 18 },
 	rpcUrls: {
-		default: { http: ['https://rpc.testnet.citrea.xyz'] },
+		default: { http: ['https://rpc.citrea.xyz'] },
 	},
 	blockExplorers: {
-		default: { name: 'Juice Explorer', url: 'https://explorer.testnet.citrea.xyz' },
+		default: { name: 'Citrea Explorer', url: 'https://explorer.citrea.xyz' },
 	},
 });
