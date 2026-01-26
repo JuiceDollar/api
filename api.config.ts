@@ -1,12 +1,14 @@
 import { Chain, createPublicClient, http } from 'viem';
 
 import { Logger } from '@nestjs/common';
-import { testnet } from 'chains';
+import { mainnet, testnet } from 'chains';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Verify environment
-if (process.env.RPC_URL_MAINNET === undefined) throw new Error('RPC_URL_MAINNET not available');
+const isMainnet = process.env.CONFIG_CHAIN === 'mainnet';
+if (isMainnet && process.env.RPC_URL_MAINNET === undefined) throw new Error('RPC_URL_MAINNET not available');
+if (!isMainnet && process.env.RPC_URL_TESTNET === undefined) throw new Error('RPC_URL_TESTNET not available');
 if (process.env.COINGECKO_API_KEY === undefined) throw new Error('COINGECKO_API_KEY not available');
 
 // Config type
@@ -40,10 +42,10 @@ export const CONFIG: ConfigType = {
 	indexer: process.env.CONFIG_INDEXER_URL,
 	indexerFallback: process.env.CONFIG_INDEXER_FALLBACK_URL,
 	coingeckoApiKey: process.env.COINGECKO_API_KEY,
-	chain: testnet,
+	chain: isMainnet ? mainnet : testnet,
 	network: {
 		mainnet: process.env.RPC_URL_MAINNET,
-		testnet: process.env.RPC_URL_MAINNET,
+		testnet: process.env.RPC_URL_TESTNET,
 	},
 	telegram: {
 		botToken: process.env.TELEGRAM_BOT_TOKEN,
@@ -72,7 +74,7 @@ process.env.NTBA_FIX_350 = 'true';
 export const VIEM_CHAIN = CONFIG.chain;
 export const VIEM_CONFIG = createPublicClient({
 	chain: VIEM_CHAIN,
-	transport: http(CONFIG.network.mainnet),
+	transport: http(isMainnet ? CONFIG.network.mainnet : CONFIG.network.testnet),
 	batch: {
 		multicall: {
 			wait: 200,

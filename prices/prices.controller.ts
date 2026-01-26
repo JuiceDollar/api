@@ -49,14 +49,6 @@ export class PricesController {
 		return this.pricesService.getCollateral();
 	}
 
-	@Get('eur')
-	@ApiResponse({
-		description: 'Returns the price of EUR in USD',
-	})
-	getEuroPrice(): Promise<PriceQueryCurrencies> {
-		return this.pricesService.getEuroPrice();
-	}
-
 	@Get('poolshares')
 	@ApiResponse({
 		description: `Returns the current price of the ${POOL_SHARES_SYMBOL} token`,
