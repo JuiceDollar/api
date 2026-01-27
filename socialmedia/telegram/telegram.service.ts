@@ -30,7 +30,7 @@ import { TelegramGroupState, TelegramState } from './telegram.types';
 @Injectable()
 export class TelegramService implements OnModuleInit, SocialMediaFct {
 	private readonly logger = new Logger(this.constructor.name);
-	private readonly bot = new TelegramBot(CONFIG.telegram.botToken, { polling: true });
+	private readonly bot: TelegramBot | null;
 	private readonly telegramHandles: string[] = ['/subscribe', '/unsubscribe', '/help'];
 	private readonly telegramState: TelegramState;
 	private telegramGroupState: TelegramGroupState;
@@ -43,6 +43,8 @@ export class TelegramService implements OnModuleInit, SocialMediaFct {
 		private readonly position: PositionsService,
 		private readonly challenge: ChallengesService
 	) {
+		this.bot = CONFIG.telegram ? new TelegramBot(CONFIG.telegram.botToken, { polling: true }) : null;
+
 		const time: number = Date.now() + 365 * 24 * 60 * 60 * 1000;
 
 		this.telegramState = {
@@ -64,6 +66,8 @@ export class TelegramService implements OnModuleInit, SocialMediaFct {
 	}
 
 	onModuleInit() {
+		if (!this.bot) return;
+
 		this.socialMediaService.register(this.constructor.name, this);
 
 		void this.readBackupGroups();
@@ -224,6 +228,7 @@ export class TelegramService implements OnModuleInit, SocialMediaFct {
 	}
 
 	private async sendMessageAll(message: string, video?: string) {
+		if (!this.bot) return;
 		if (this.telegramGroupState.groups.length == 0) return;
 		for (const group of this.telegramGroupState.groups) {
 			await this.sendMessage(group, message, video);

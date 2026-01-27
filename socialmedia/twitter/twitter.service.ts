@@ -15,20 +15,23 @@ import { TradeMessage } from './messages/Trade.message';
 @Injectable()
 export class TwitterService implements OnModuleInit, SocialMediaFct {
 	private readonly logger = new Logger(this.constructor.name);
+	private readonly client: TwitterApi | null;
 
-	private client: TwitterApi;
-
-	constructor(private readonly socialMediaService: SocialMediaService) {}
+	constructor(private readonly socialMediaService: SocialMediaService) {
+		this.client = CONFIG.twitter
+			? new TwitterApi({
+					appKey: CONFIG.twitter.appKey,
+					appSecret: CONFIG.twitter.appSecret,
+					accessToken: CONFIG.twitter.accessToken,
+					accessSecret: CONFIG.twitter.accessSecret,
+				})
+			: null;
+	}
 
 	async onModuleInit() {
-		this.socialMediaService.register(this.constructor.name, this);
+		if (!this.client) return;
 
-		this.client = new TwitterApi({
-			appKey: CONFIG.twitter.appKey,
-			appSecret: CONFIG.twitter.appSecret,
-			accessToken: CONFIG.twitter.accessToken,
-			accessSecret: CONFIG.twitter.accessSecret,
-		});
+		this.socialMediaService.register(this.constructor.name, this);
 	}
 
 	async doSendUpdates(): Promise<void> {
@@ -65,7 +68,9 @@ export class TwitterService implements OnModuleInit, SocialMediaFct {
 		await this.sendPost(messageInfo[0], messageInfo[1]);
 	}
 
-	private async sendPost(message: string, media?: string): Promise<string> {
+	private async sendPost(message: string, media?: string): Promise<string | undefined> {
+		if (!this.client) return;
+
 		try {
 			const tweetParams: Partial<SendTweetV2Params> = {
 				text: message,
