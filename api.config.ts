@@ -26,14 +26,14 @@ export type ConfigType = {
 		botToken: string;
 		groupsJson: string;
 		imagesDir: string;
-	};
+	} | null;
 	twitter: {
 		accessToken: string;
 		accessSecret: string;
 		appKey: string;
 		appSecret: string;
 		imagesDir: string;
-	};
+	} | null;
 };
 
 // Create config
@@ -47,18 +47,22 @@ export const CONFIG: ConfigType = {
 		mainnet: process.env.RPC_URL_MAINNET,
 		testnet: process.env.RPC_URL_TESTNET,
 	},
-	telegram: {
-		botToken: process.env.TELEGRAM_BOT_TOKEN,
-		groupsJson: process.env.TELEGRAM_GROUPS_JSON,
-		imagesDir: process.env.TELEGRAM_IMAGES_DIR,
-	},
-	twitter: {
-		appKey: process.env.TWITTER_CLIENT_APP_KEY,
-		appSecret: process.env.TWITTER_CLIENT_APP_SECRET,
-		accessToken: process.env.TWITTER_ACCESS_TOKEN,
-		accessSecret: process.env.TWITTER_ACCESS_SECRET,
-		imagesDir: process.env.TWITTER_IMAGES_DIR,
-	},
+	telegram: process.env.TELEGRAM_BOT_TOKEN
+		? {
+				botToken: process.env.TELEGRAM_BOT_TOKEN,
+				groupsJson: process.env.TELEGRAM_GROUPS_JSON,
+				imagesDir: process.env.TELEGRAM_IMAGES_DIR,
+			}
+		: null,
+	twitter: process.env.TWITTER_CLIENT_APP_KEY
+		? {
+				appKey: process.env.TWITTER_CLIENT_APP_KEY,
+				appSecret: process.env.TWITTER_CLIENT_APP_SECRET,
+				accessToken: process.env.TWITTER_ACCESS_TOKEN,
+				accessSecret: process.env.TWITTER_ACCESS_SECRET,
+				imagesDir: process.env.TWITTER_IMAGES_DIR,
+			}
+		: null,
 };
 
 export function logConfig() {
