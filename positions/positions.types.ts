@@ -16,6 +16,7 @@ export type PositionQuery = {
 	denied: boolean;
 	closed: boolean;
 	original: Address;
+	isChallenged: boolean;
 
 	minimumCollateral: string;
 	annualInterestPPM: number; // @dev: in V2, sum of leadrate and riskPremium
@@ -116,6 +117,16 @@ export type ApiMintingUpdateMapping = {
 	num: number;
 	positions: Address[];
 	map: MintingUpdateQueryObjectArray;
+};
+
+export type ReferencePositionsMapping = {
+	[collateral: Address]: PositionQuery;
+};
+
+export type ApiReferencePositions = {
+	num: number;
+	collaterals: Address[];
+	map: ReferencePositionsMapping;
 };
 
 export type ApiPositionDefault = {
