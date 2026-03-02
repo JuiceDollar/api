@@ -12,11 +12,13 @@ import {
 	ApiPositionsListing,
 	ApiPositionsMapping,
 	ApiPositionsOwners,
+	ApiReferencePositions,
 	MintingUpdateQuery,
 	MintingUpdateQueryObjectArray,
 	OwnersPositionsObjectArray,
 	PositionQuery,
 	PositionsQueryObjectArray,
+	ReferencePositionsMapping,
 } from './positions.types';
 
 // Genesis position address from NPM package
@@ -117,6 +119,7 @@ export class PositionsService {
 							denied
 							closed
 							original
+							isChallenged
 
 							minimumCollateral
 							riskPremiumPPM
@@ -237,6 +240,7 @@ export class PositionsService {
 				denied: p.denied,
 				closed: p.closed,
 				original: getAddress(p.original),
+				isChallenged: p.isChallenged,
 
 				minimumCollateral: p.minimumCollateral,
 				annualInterestPPM: leadrate + p.riskPremiumPPM,
@@ -277,6 +281,29 @@ export class PositionsService {
 		this.fetchedPositions = { ...this.fetchedPositions, ...list };
 
 		return list;
+	}
+
+	getReferencePositions(): ApiReferencePositions {
+		const now = Math.floor(Date.now() / 1000);
+		const candidates = Object.values(this.fetchedPositions) as PositionQuery[];
+		const map: ReferencePositionsMapping = {};
+
+		for (const p of candidates) {
+			if (p.closed || p.denied) continue;
+			if (p.isChallenged) continue;
+			if (BigInt(p.principal) === 0n) continue;
+			if (Number(p.cooldown) >= now) continue;
+			if (Number(p.expiration) <= now) continue;
+
+			const collateral = p.collateral.toLowerCase() as Address;
+			const current = map[collateral];
+			if (!current || BigInt(p.price) > BigInt(current.price)) {
+				map[collateral] = p;
+			}
+		}
+
+		const collaterals = Object.keys(map) as Address[];
+		return { num: collaterals.length, collaterals, map };
 	}
 
 	getMintingUpdatesList(): ApiMintingUpdateListing {

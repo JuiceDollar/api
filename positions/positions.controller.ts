@@ -7,6 +7,7 @@ import {
 	ApiPositionsListing,
 	ApiPositionsMapping,
 	ApiPositionsOwners,
+	ApiReferencePositions,
 } from './positions.types';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -77,5 +78,13 @@ export class PositionsController {
 	})
 	geMintingtMapping(): ApiMintingUpdateMapping {
 		return this.positionsService.getMintingUpdatesMapping();
+	}
+
+	@Get('reference')
+	@ApiResponse({
+		description: 'Returns the active position with the highest price per collateral for cooldown-free price increases',
+	})
+	getReferencePositions(): ApiReferencePositions {
+		return this.positionsService.getReferencePositions();
 	}
 }
