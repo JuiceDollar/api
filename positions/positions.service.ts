@@ -6,6 +6,7 @@ import { Address, erc20Abi, getAddress } from 'viem';
 import { PONDER_CLIENT } from '../api.apollo.config';
 import { CONFIG, VIEM_CONFIG } from '../api.config';
 import {
+	ApiBestCloneable,
 	ApiMintingUpdateListing,
 	ApiMintingUpdateMapping,
 	ApiPositionDefault,
@@ -304,6 +305,30 @@ export class PositionsService {
 
 		const collaterals = Object.keys(map) as Address[];
 		return { num: collaterals.length, collaterals, map };
+	}
+
+	getBestCloneableParent(collateral: Address): ApiBestCloneable {
+		const now = Math.floor(Date.now() / 1000);
+		const collateralLower = collateral.toLowerCase() as Address;
+		const candidates = Object.values(this.fetchedPositions) as PositionQuery[];
+
+		const cloneable = candidates
+			.filter(
+				(p) =>
+					!p.closed &&
+					!p.denied &&
+					p.expiration > now &&
+					p.cooldown < now &&
+					BigInt(p.collateralBalance) >= BigInt(p.minimumCollateral) &&
+					p.collateral.toLowerCase() === collateralLower &&
+					!p.isChallenged,
+			)
+			.sort((a, b) => {
+				const diff = BigInt(b.price) - BigInt(a.price);
+				return diff > 0n ? 1 : diff < 0n ? -1 : 0;
+			});
+
+		return { position: cloneable[0] ?? null };
 	}
 
 	getMintingUpdatesList(): ApiMintingUpdateListing {

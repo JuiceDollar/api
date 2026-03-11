@@ -129,6 +129,10 @@ export type ApiReferencePositions = {
 	map: ReferencePositionsMapping;
 };
 
+export type ApiBestCloneable = {
+	position: PositionQuery | null;
+};
+
 export type ApiPositionDefault = {
 	position: Address;
 	collateral: Address;
