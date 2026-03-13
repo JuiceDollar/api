@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { PositionsService } from './positions.service';
 import {
+	ApiBestCloneable,
 	ApiMintingUpdateListing,
 	ApiMintingUpdateMapping,
 	ApiPositionDefault,
@@ -9,6 +10,7 @@ import {
 	ApiPositionsOwners,
 	ApiReferencePositions,
 } from './positions.types';
+import { Address } from 'viem';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Positions Controller')
@@ -86,5 +88,13 @@ export class PositionsController {
 	})
 	getReferencePositions(): ApiReferencePositions {
 		return this.positionsService.getReferencePositions();
+	}
+
+	@Get('best-cloneable')
+	@ApiResponse({
+		description: 'Returns the best cloneable parent position for the given collateral (highest price, active, not challenged)',
+	})
+	getBestCloneable(@Query('collateral') collateral: string): ApiBestCloneable {
+		return this.positionsService.getBestCloneableParent((collateral ?? '').toLowerCase() as Address);
 	}
 }
