@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, MintingHubGatewayABI } from '@juicedollar/jusd';
+import { ADDRESS, MintingHubGatewayV2ABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { VIEM_CONFIG } from 'api.config';
@@ -181,7 +181,7 @@ export class ChallengesService {
 		const id = VIEM_CONFIG.chain.id;
 		for (const c of active) {
 			const price = await VIEM_CONFIG.readContract({
-				abi: MintingHubGatewayABI,
+				abi: MintingHubGatewayV2ABI,
 				address: ADDRESS[id].mintingHubGateway,
 				functionName: 'price',
 				args: [parseInt(c.number.toString())],

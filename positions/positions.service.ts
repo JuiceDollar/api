@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, PositionV2ABI, SavingsABI } from '@juicedollar/jusd';
+import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { FIVEDAYS_MS } from 'utils/const-helper';
 import { Address, erc20Abi, getAddress } from 'viem';
@@ -164,7 +164,7 @@ export class PositionsService {
 
 		const leadrate = await VIEM_CONFIG.readContract({
 			address: ADDRESS[CONFIG.chain.id].savingsGateway,
-			abi: SavingsABI,
+			abi: SavingsGatewayV2ABI,
 			functionName: 'currentRatePPM',
 			authorizationList: undefined,
 		});

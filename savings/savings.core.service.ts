@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, SavingsGatewayABI } from '@juicedollar/jusd';
+import { ADDRESS, SavingsGatewayV2ABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { VIEM_CONFIG } from 'api.config';
@@ -65,7 +65,7 @@ export class SavingsCoreService {
 			items.map(async (item) => {
 				const unrealizedInterest = await VIEM_CONFIG.readContract({
 					address: ADDRESS[VIEM_CONFIG.chain.id].savingsGateway,
-					abi: SavingsGatewayABI,
+					abi: SavingsGatewayV2ABI,
 					functionName: 'accruedInterest',
 					args: [item.id],
 					authorizationList: undefined,
