@@ -50,6 +50,7 @@ export type ApiSavingsInfo = {
 	totalWithdrawn: number;
 	totalBalance: number;
 	totalInterest: number;
+	rate: number;
 	rateV2: number;
 	rateV3: number;
 	ratioOfSupply: number;

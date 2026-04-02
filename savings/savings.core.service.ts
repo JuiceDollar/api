@@ -37,6 +37,7 @@ export class SavingsCoreService {
 			totalWithdrawn,
 			totalBalance: totalSaved - totalWithdrawn,
 			totalInterest,
+			rate: info.v3.rate,
 			rateV2: info.v2.rate,
 			rateV3: info.v3.rate,
 			ratioOfSupply,
