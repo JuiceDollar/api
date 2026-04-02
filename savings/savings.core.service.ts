@@ -23,7 +23,7 @@ export class SavingsCoreService {
 		const totalSavedRaw = this.fc.getEcosystemStablecoinKeyValues()?.['Savings:TotalSaved']?.amount || 0n;
 		const totalInterestRaw = this.fc.getEcosystemStablecoinKeyValues()?.['Savings:TotalInterestCollected']?.amount || 0n;
 		const totalWithdrawnRaw = this.fc.getEcosystemStablecoinKeyValues()?.['Savings:TotalWithdrawn']?.amount || 0n;
-		const rate = this.lead.getInfo().rate;
+		const info = this.lead.getInfo();
 
 		const totalSaved: number = parseFloat(formatUnits(totalSavedRaw, 18));
 		const totalInterest: number = parseFloat(formatUnits(totalInterestRaw, 18));
@@ -37,7 +37,8 @@ export class SavingsCoreService {
 			totalWithdrawn,
 			totalBalance: totalSaved - totalWithdrawn,
 			totalInterest,
-			rate,
+			rateV2: info.v2.rate,
+			rateV3: info.v3.rate,
 			ratioOfSupply,
 		};
 	}

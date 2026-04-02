@@ -244,6 +244,9 @@ export class PositionsService {
 			const v = (virtualPriceData[idx] as PromiseFulfilledResult<bigint>).value;
 			const i = (interestData[idx] as PromiseFulfilledResult<bigint>).value;
 			const hubResult = hubData[idx];
+			if (hubResult.status === 'rejected') {
+				this.logger.warn(`Failed to read hub for position ${p.position}, defaulting to V2 leadrate: ${hubResult.reason}`);
+			}
 			const hub = hubResult.status === 'fulfilled' ? hubResult.value : undefined;
 			const leadrate = hub && isV3Hub(hub) ? v3Leadrate : v2Leadrate;
 
