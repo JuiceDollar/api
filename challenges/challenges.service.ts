@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client/core';
-import { MintingHubV3ABI } from '@juicedollar/jusd';
-import { getHubAddress, getMintingHubForHub } from '../utils/v2v3';
+import { MintingHubGatewayV2ABI, MintingHubV3ABI } from '@juicedollar/jusd';
+import { getHubAddress, getMintingHubForHub, isV3Hub } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { VIEM_CONFIG } from 'api.config';
@@ -183,9 +183,10 @@ export class ChallengesService {
 			try {
 				const hub = await getHubAddress(c.position as Address);
 				const hubAddress = getMintingHubForHub(hub);
+				const abi = isV3Hub(hub) ? MintingHubV3ABI : MintingHubGatewayV2ABI;
 
 				const price = await VIEM_CONFIG.readContract({
-					abi: MintingHubV3ABI,
+					abi,
 					address: hubAddress,
 					functionName: 'price',
 					args: [BigInt(c.number)],
