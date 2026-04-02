@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, SavingsGatewayV2ABI } from '@juicedollar/jusd';
+import { SavingsGatewayV2ABI, SavingsV3ABI } from '@juicedollar/jusd';
+import { ADDR, isDeployed } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { VIEM_CONFIG } from 'api.config';
@@ -63,18 +64,32 @@ export class SavingsCoreService {
 
 		const mapped = await Promise.all(
 			items.map(async (item) => {
-				const unrealizedInterest = await VIEM_CONFIG.readContract({
-					address: ADDRESS[VIEM_CONFIG.chain.id].savingsGateway,
-					abi: SavingsGatewayV2ABI,
-					functionName: 'accruedInterest',
-					args: [item.id],
-					authorizationList: undefined,
-				});
+				const results = await Promise.allSettled([
+					VIEM_CONFIG.readContract({
+						address: ADDR.savingsGateway,
+						abi: SavingsGatewayV2ABI,
+						functionName: 'accruedInterest',
+						args: [item.id],
+						authorizationList: undefined,
+					}),
+					isDeployed(ADDR.savings)
+						? VIEM_CONFIG.readContract({
+								address: ADDR.savings,
+								abi: SavingsV3ABI,
+								functionName: 'accruedInterest',
+								args: [item.id],
+								authorizationList: undefined,
+							})
+						: Promise.resolve(0n),
+				]);
+
+				const v2 = results[0].status === 'fulfilled' ? results[0].value : 0n;
+				const v3 = results[1].status === 'fulfilled' ? results[1].value : 0n;
 
 				return {
 					account: item.id,
 					amountSaved: item.amountSaved,
-					unrealizedInterest: unrealizedInterest.toString(),
+					unrealizedInterest: (BigInt(v2) + BigInt(v3)).toString(),
 					interestReceived: item.interestReceived,
 				};
 			})

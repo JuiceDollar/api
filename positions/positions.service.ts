@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI } from '@juicedollar/jusd';
+import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI, SavingsV3ABI } from '@juicedollar/jusd';
+import { ADDR, isDeployed, getHubAddress, isV3Hub } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { FIVEDAYS_MS } from 'utils/const-helper';
 import { Address, erc20Abi, getAddress } from 'viem';
@@ -161,13 +162,27 @@ export class PositionsService {
 		const balanceOfDataPromises: Promise<bigint>[] = [];
 		const virtualPriceDataPromises: Promise<bigint>[] = [];
 		const interestPromises: Promise<bigint>[] = [];
+		const hubPromises: Promise<Address>[] = [];
 
-		const leadrate = await VIEM_CONFIG.readContract({
-			address: ADDRESS[CONFIG.chain.id].savingsGateway,
-			abi: SavingsGatewayV2ABI,
-			functionName: 'currentRatePPM',
-			authorizationList: undefined,
-		});
+		// Read leadrates from both V2 and V3 savings contracts
+		const leadrateResults = await Promise.allSettled([
+			VIEM_CONFIG.readContract({
+				address: ADDR.savingsGateway,
+				abi: SavingsGatewayV2ABI,
+				functionName: 'currentRatePPM',
+				authorizationList: undefined,
+			}),
+			isDeployed(ADDR.savings)
+				? VIEM_CONFIG.readContract({
+						address: ADDR.savings,
+						abi: SavingsV3ABI,
+						functionName: 'currentRatePPM',
+						authorizationList: undefined,
+					})
+				: Promise.resolve(0),
+		]);
+		const v2Leadrate = leadrateResults[0].status === 'fulfilled' ? leadrateResults[0].value : 0;
+		const v3Leadrate = leadrateResults[1].status === 'fulfilled' ? leadrateResults[1].value : 0;
 
 		for (const p of items) {
 			// Forces the collateral balance to be overwritten with the latest blockchain state, instead of the ponder state.
@@ -201,6 +216,8 @@ export class PositionsService {
 				})
 			);
 
+			hubPromises.push(getHubAddress(p.position));
+
 			// TODO: is this solved in V2?
 			// fetch minted - See issue #11
 			// https://github.com/Frankencoin-ZCHF/frankencoin-api/issues/
@@ -219,12 +236,16 @@ export class PositionsService {
 		const balanceOfData = await Promise.allSettled(balanceOfDataPromises);
 		const virtualPriceData = await Promise.allSettled(virtualPriceDataPromises);
 		const interestData = await Promise.allSettled(interestPromises);
+		const hubData = await Promise.allSettled(hubPromises);
 
 		for (let idx = 0; idx < items.length; idx++) {
 			const p = items[idx] as PositionQuery;
 			const b = (balanceOfData[idx] as PromiseFulfilledResult<bigint>).value;
 			const v = (virtualPriceData[idx] as PromiseFulfilledResult<bigint>).value;
 			const i = (interestData[idx] as PromiseFulfilledResult<bigint>).value;
+			const hubResult = hubData[idx];
+			const hub = hubResult.status === 'fulfilled' ? hubResult.value : undefined;
+			const leadrate = hub && isV3Hub(hub) ? v3Leadrate : v2Leadrate;
 
 			const entry: PositionQuery = {
 				version: 2,
