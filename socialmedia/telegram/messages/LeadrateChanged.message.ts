@@ -6,7 +6,7 @@ export function LeadrateChangedMessage(rate: LeadrateRateQuery): string {
 	const d = new Date(rate.created * 1000);
 
 	return `
-*Leadrate Changed*
+*Leadrate Changed* (${rate.source.toUpperCase()})
 
 Valid from: ${d.toString().split(' ').slice(0, 5).join(' ')}
 Approved Rate: ${formatCurrency(rate.approvedRate / 10_000)}%
