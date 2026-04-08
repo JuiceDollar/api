@@ -1,5 +1,4 @@
-import { ADDRESS } from '@juicedollar/jusd';
-import { CONFIG } from 'api.config';
+import { ADDR } from 'api.config';
 
 export enum StablecoinEnum {
 	StartUSD = 'StartUSD',
@@ -7,8 +6,6 @@ export enum StablecoinEnum {
 	USDTe = 'USDT.e',
 	ctUSD = 'ctUSD',
 }
-
-const ADDR = ADDRESS[CONFIG.chain.id];
 
 // Map enum values to lowercased stablecoin token addresses (skipping undefined for testnet)
 export const STABLECOIN_ADDRESS: Partial<Record<StablecoinEnum, string>> = {

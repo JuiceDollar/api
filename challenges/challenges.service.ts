@@ -1,9 +1,8 @@
 import { gql } from '@apollo/client/core';
 import { MintingHubGatewayV2ABI, MintingHubV3ABI } from '@juicedollar/jusd';
-import { isV3Hub } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
-import { VIEM_CONFIG } from 'api.config';
+import { isV3Hub, VIEM_CONFIG } from 'api.config';
 import { Address } from 'viem';
 import {
 	ApiBidsBidders,

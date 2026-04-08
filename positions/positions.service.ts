@@ -1,11 +1,10 @@
 import { gql } from '@apollo/client/core';
 import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI, SavingsV3ABI } from '@juicedollar/jusd';
-import { ADDR, isDeployed, isV3Hub } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { FIVEDAYS_MS } from 'utils/const-helper';
 import { Address, erc20Abi, getAddress } from 'viem';
 import { PONDER_CLIENT } from '../api.apollo.config';
-import { CONFIG, VIEM_CONFIG } from '../api.config';
+import { ADDR, CONFIG, isDeployed, isV3Hub, VIEM_CONFIG } from '../api.config';
 import {
 	ApiBestCloneable,
 	ApiMintingUpdateListing,
