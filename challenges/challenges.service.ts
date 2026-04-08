@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client/core';
 import { MintingHubGatewayV2ABI, MintingHubV3ABI } from '@juicedollar/jusd';
-import { getHubAddress, getMintingHubForHub, isV3Hub } from '../utils/v2v3';
+import { isV3Hub } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
 import { VIEM_CONFIG } from 'api.config';
@@ -181,13 +181,11 @@ export class ChallengesService {
 		const challengesPrices: ChallengesPricesMapping = {};
 		for (const c of active) {
 			try {
-				const hub = await getHubAddress(c.position as Address);
-				const hubAddress = getMintingHubForHub(hub);
-				const abi = isV3Hub(hub) ? MintingHubV3ABI : MintingHubGatewayV2ABI;
+				const abi = isV3Hub(c.mintingHubAddress) ? MintingHubV3ABI : MintingHubGatewayV2ABI;
 
 				const price = await VIEM_CONFIG.readContract({
 					abi,
-					address: hubAddress,
+					address: c.mintingHubAddress,
 					functionName: 'price',
 					args: [BigInt(c.number)],
 					authorizationList: undefined,
@@ -214,6 +212,7 @@ export class ChallengesService {
 						items {
 							id
 							position
+							mintingHubAddress
 							number
 							challenger
 							start
@@ -259,6 +258,7 @@ export class ChallengesService {
 						items {
 							id
 							position
+							mintingHubAddress
 							number
 							numberBid
 							bidder

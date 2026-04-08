@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client/core';
 import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI, SavingsV3ABI } from '@juicedollar/jusd';
-import { ADDR, isDeployed, getHubAddress, isV3Hub } from '../utils/v2v3';
+import { ADDR, isDeployed, isV3Hub } from '../utils/v2v3';
 import { Injectable, Logger } from '@nestjs/common';
 import { FIVEDAYS_MS } from 'utils/const-helper';
 import { Address, erc20Abi, getAddress } from 'viem';
@@ -146,6 +146,7 @@ export class PositionsService {
 
 							fixedAnnualRatePPM
 							principal
+							mintingHubAddress
 						}
 					}
 				}
@@ -162,7 +163,6 @@ export class PositionsService {
 		const balanceOfDataPromises: Promise<bigint>[] = [];
 		const virtualPriceDataPromises: Promise<bigint>[] = [];
 		const interestPromises: Promise<bigint>[] = [];
-		const hubPromises: Promise<Address>[] = [];
 
 		// Read leadrates from both V2 and V3 savings contracts
 		const leadrateResults = await Promise.allSettled([
@@ -216,8 +216,6 @@ export class PositionsService {
 				})
 			);
 
-			hubPromises.push(getHubAddress(p.position));
-
 			// TODO: is this solved in V2?
 			// fetch minted - See issue #11
 			// https://github.com/Frankencoin-ZCHF/frankencoin-api/issues/
@@ -236,19 +234,13 @@ export class PositionsService {
 		const balanceOfData = await Promise.allSettled(balanceOfDataPromises);
 		const virtualPriceData = await Promise.allSettled(virtualPriceDataPromises);
 		const interestData = await Promise.allSettled(interestPromises);
-		const hubData = await Promise.allSettled(hubPromises);
 
 		for (let idx = 0; idx < items.length; idx++) {
 			const p = items[idx] as PositionQuery;
 			const b = (balanceOfData[idx] as PromiseFulfilledResult<bigint>).value;
 			const v = (virtualPriceData[idx] as PromiseFulfilledResult<bigint>).value;
 			const i = (interestData[idx] as PromiseFulfilledResult<bigint>).value;
-			const hubResult = hubData[idx];
-			if (hubResult.status === 'rejected') {
-				this.logger.warn(`Failed to read hub for position ${p.position}, defaulting to V2 leadrate: ${hubResult.reason}`);
-			}
-			const hub = hubResult.status === 'fulfilled' ? hubResult.value : undefined;
-			const leadrate = hub && isV3Hub(hub) ? v3Leadrate : v2Leadrate;
+			const leadrate = isV3Hub(p.mintingHubAddress) ? v3Leadrate : v2Leadrate;
 
 			const entry: PositionQuery = {
 				version: 2,
@@ -257,6 +249,7 @@ export class PositionsService {
 				owner: getAddress(p.owner),
 				stablecoinAddress: getAddress(p.stablecoinAddress),
 				collateral: getAddress(p.collateral),
+				mintingHubAddress: getAddress(p.mintingHubAddress),
 				price: p.price,
 
 				created: p.created,

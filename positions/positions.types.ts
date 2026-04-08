@@ -8,6 +8,7 @@ export type PositionQuery = {
 	owner: Address;
 	stablecoinAddress: Address;
 	collateral: Address;
+	mintingHubAddress: Address;
 	price: string;
 
 	created: number;
