@@ -32,7 +32,7 @@ export class PositionsService {
 	private fetchedPositions: PositionsQueryObjectArray = {};
 	private fetchedMintingUpdates: MintingUpdateQueryObjectArray = {};
 
-	constructor() {}
+	constructor() { }
 
 	getDefaultPosition(): ApiPositionDefault | null {
 		const cached = this.fetchedPositions[GENESIS_POSITION.toLowerCase() as Address];
@@ -394,6 +394,7 @@ export class PositionsService {
 							feeTimeframe
 							feePPM
 							feePaid
+							mintingHubAddress
 						}
 					}
 				}
@@ -415,7 +416,7 @@ export class PositionsService {
 			if (list[k] === undefined) list[k] = [];
 
 			const entry: MintingUpdateQuery = {
-				version: 2,
+				version: isV3Hub(m.mintingHubAddress) ? 3 : 2,
 
 				id: m.id,
 				txHash: m.txHash,
@@ -440,6 +441,7 @@ export class PositionsService {
 				feeTimeframe: m.feeTimeframe,
 				feePPM: m.feePPM,
 				feePaid: m.feePaid,
+				mintingHubAddress: getAddress(m.mintingHubAddress),
 			};
 
 			list[k].push(entry);

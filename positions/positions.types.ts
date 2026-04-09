@@ -49,7 +49,7 @@ export type PositionQuery = {
 export type MintingUpdateQueryId = `${Address}-${number}`;
 
 export type MintingUpdateQuery = {
-	version: 2;
+	version: 2 | 3;
 
 	id: MintingUpdateQueryId;
 	txHash: string;
@@ -74,6 +74,7 @@ export type MintingUpdateQuery = {
 	feeTimeframe: number;
 	feePPM: number;
 	feePaid: string;
+	mintingHubAddress: Address;
 };
 
 // ----------------------------------------------------------------------------------
