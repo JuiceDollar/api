@@ -163,25 +163,28 @@ export class PositionsService {
 		const virtualPriceDataPromises: Promise<bigint>[] = [];
 		const interestPromises: Promise<bigint>[] = [];
 
-		// Read leadrates from both V2 and V3 savings contracts
-		const leadrateResults = await Promise.allSettled([
-			VIEM_CONFIG.readContract({
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayV2ABI,
-				functionName: 'currentRatePPM',
-				authorizationList: undefined,
-			}),
-			isDeployed(ADDR.savings)
-				? VIEM_CONFIG.readContract({
-						address: ADDR.savings,
-						abi: SavingsV3ABI,
-						functionName: 'currentRatePPM',
-						authorizationList: undefined,
-					})
-				: Promise.resolve(0),
-		]);
-		const v2Leadrate = leadrateResults[0].status === 'fulfilled' ? leadrateResults[0].value : 0;
-		const v3Leadrate = leadrateResults[1].status === 'fulfilled' ? leadrateResults[1].value : 0;
+		// V2 leadrate must succeed — failure aborts the update so stale-but-correct data is served
+		const v2Leadrate = await VIEM_CONFIG.readContract({
+			address: ADDR.savingsGateway,
+			abi: SavingsGatewayV2ABI,
+			functionName: 'currentRatePPM',
+			authorizationList: undefined,
+		});
+
+		// V3 leadrate is best-effort — not available on all chains (e.g. testnet)
+		let v3Leadrate = 0;
+		if (isDeployed(ADDR.savings)) {
+			try {
+				v3Leadrate = await VIEM_CONFIG.readContract({
+					address: ADDR.savings,
+					abi: SavingsV3ABI,
+					functionName: 'currentRatePPM',
+					authorizationList: undefined,
+				});
+			} catch (e) {
+				this.logger.error(`Failed to fetch V3 leadrate: ${e}`);
+			}
+		}
 
 		for (const p of items) {
 			// Forces the collateral balance to be overwritten with the latest blockchain state, instead of the ponder state.
@@ -242,7 +245,7 @@ export class PositionsService {
 			const leadrate = isV3Hub(p.mintingHubAddress) ? v3Leadrate : v2Leadrate;
 
 			const entry: PositionQuery = {
-				version: 2,
+				version: isV3Hub(p.mintingHubAddress) ? 3 : 2,
 
 				position: getAddress(p.position),
 				owner: getAddress(p.owner),

@@ -2,7 +2,7 @@ import { Address } from 'viem';
 // ----------------------------------------------------------------------------------
 // Ponder
 export type PositionQuery = {
-	version: 2;
+	version: 2 | 3;
 
 	position: Address;
 	owner: Address;
