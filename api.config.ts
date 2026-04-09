@@ -1,5 +1,5 @@
-import { Chain, createPublicClient, http } from 'viem';
-
+import { Address, Chain, createPublicClient, http, zeroAddress } from 'viem';
+import { ADDRESS } from '@juicedollar/jusd';
 import { Logger } from '@nestjs/common';
 import { mainnet, testnet } from 'chains';
 import * as dotenv from 'dotenv';
@@ -96,3 +96,14 @@ export const COINGECKO_CLIENT = (query: string) => {
 export const PROTOCOL_STABLECOIN_SYMBOL = 'JUSD';
 export const PROTOCOL_STABLECOIN_NAME = 'Juice Dollar';
 export const POOL_SHARES_SYMBOL = 'JUICE';
+
+// Contract addresses for the active chain
+export const ADDR = ADDRESS[CONFIG.chain.id];
+
+export function isDeployed(addr: string | undefined): addr is Address {
+	return !!addr && addr !== zeroAddress;
+}
+
+export function isV3Hub(hubAddress: Address): boolean {
+	return isDeployed(ADDR.mintingHub) && hubAddress.toLowerCase() === ADDR.mintingHub.toLowerCase();
+}

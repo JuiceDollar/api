@@ -1,10 +1,10 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI } from '@juicedollar/jusd';
+import { ADDRESS, PositionV2ABI, SavingsGatewayV2ABI, SavingsV3ABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { FIVEDAYS_MS } from 'utils/const-helper';
 import { Address, erc20Abi, getAddress } from 'viem';
 import { PONDER_CLIENT } from '../api.apollo.config';
-import { CONFIG, VIEM_CONFIG } from '../api.config';
+import { ADDR, CONFIG, isDeployed, isV3Hub, VIEM_CONFIG } from '../api.config';
 import {
 	ApiBestCloneable,
 	ApiMintingUpdateListing,
@@ -32,7 +32,7 @@ export class PositionsService {
 	private fetchedPositions: PositionsQueryObjectArray = {};
 	private fetchedMintingUpdates: MintingUpdateQueryObjectArray = {};
 
-	constructor() {}
+	constructor() { }
 
 	getDefaultPosition(): ApiPositionDefault | null {
 		const cached = this.fetchedPositions[GENESIS_POSITION.toLowerCase() as Address];
@@ -145,6 +145,7 @@ export class PositionsService {
 
 							fixedAnnualRatePPM
 							principal
+							mintingHubAddress
 						}
 					}
 				}
@@ -162,12 +163,28 @@ export class PositionsService {
 		const virtualPriceDataPromises: Promise<bigint>[] = [];
 		const interestPromises: Promise<bigint>[] = [];
 
-		const leadrate = await VIEM_CONFIG.readContract({
-			address: ADDRESS[CONFIG.chain.id].savingsGateway,
+		// V2 leadrate must succeed — failure aborts the update so stale-but-correct data is served
+		const v2Leadrate = await VIEM_CONFIG.readContract({
+			address: ADDR.savingsGateway,
 			abi: SavingsGatewayV2ABI,
 			functionName: 'currentRatePPM',
 			authorizationList: undefined,
 		});
+
+		// V3 leadrate is best-effort — not available on all chains (e.g. testnet)
+		let v3Leadrate = 0;
+		if (isDeployed(ADDR.savings)) {
+			try {
+				v3Leadrate = await VIEM_CONFIG.readContract({
+					address: ADDR.savings,
+					abi: SavingsV3ABI,
+					functionName: 'currentRatePPM',
+					authorizationList: undefined,
+				});
+			} catch (e) {
+				this.logger.error(`Failed to fetch V3 leadrate: ${e}`);
+			}
+		}
 
 		for (const p of items) {
 			// Forces the collateral balance to be overwritten with the latest blockchain state, instead of the ponder state.
@@ -225,14 +242,16 @@ export class PositionsService {
 			const b = (balanceOfData[idx] as PromiseFulfilledResult<bigint>).value;
 			const v = (virtualPriceData[idx] as PromiseFulfilledResult<bigint>).value;
 			const i = (interestData[idx] as PromiseFulfilledResult<bigint>).value;
+			const leadrate = isV3Hub(p.mintingHubAddress) ? v3Leadrate : v2Leadrate;
 
 			const entry: PositionQuery = {
-				version: 2,
+				version: isV3Hub(p.mintingHubAddress) ? 3 : 2,
 
 				position: getAddress(p.position),
 				owner: getAddress(p.owner),
 				stablecoinAddress: getAddress(p.stablecoinAddress),
 				collateral: getAddress(p.collateral),
+				mintingHubAddress: getAddress(p.mintingHubAddress),
 				price: p.price,
 
 				created: p.created,
@@ -375,6 +394,7 @@ export class PositionsService {
 							feeTimeframe
 							feePPM
 							feePaid
+							mintingHubAddress
 						}
 					}
 				}
@@ -396,7 +416,7 @@ export class PositionsService {
 			if (list[k] === undefined) list[k] = [];
 
 			const entry: MintingUpdateQuery = {
-				version: 2,
+				version: isV3Hub(m.mintingHubAddress) ? 3 : 2,
 
 				id: m.id,
 				txHash: m.txHash,
@@ -421,6 +441,7 @@ export class PositionsService {
 				feeTimeframe: m.feeTimeframe,
 				feePPM: m.feePPM,
 				feePaid: m.feePaid,
+				mintingHubAddress: getAddress(m.mintingHubAddress),
 			};
 
 			list[k].push(entry);
