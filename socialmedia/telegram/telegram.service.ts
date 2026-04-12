@@ -148,7 +148,10 @@ export class TelegramService implements OnModuleInit, SocialMediaFct {
 		const leadrateRates = this.leadrate.getRates();
 		if (leadrateProposal.length > 0) {
 			this.telegramState.leadrateProposal = Date.now();
-			this.sendMessageAll(LeadrateProposalMessage(leadrateProposal[0], leadrateRates));
+			const proposal = leadrateProposal[0];
+			const leadrateInfo = this.leadrate.getInfo();
+			const currentRate = proposal.source === 'v3' ? leadrateInfo.v3.rate : leadrateInfo.v2.rate;
+			this.sendMessageAll(LeadrateProposalMessage(proposal, currentRate));
 		}
 
 		// Leadrate Changed

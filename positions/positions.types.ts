@@ -2,12 +2,13 @@ import { Address } from 'viem';
 // ----------------------------------------------------------------------------------
 // Ponder
 export type PositionQuery = {
-	version: 2;
+	version: 2 | 3;
 
 	position: Address;
 	owner: Address;
 	stablecoinAddress: Address;
 	collateral: Address;
+	mintingHubAddress: Address;
 	price: string;
 
 	created: number;
@@ -48,7 +49,7 @@ export type PositionQuery = {
 export type MintingUpdateQueryId = `${Address}-${number}`;
 
 export type MintingUpdateQuery = {
-	version: 2;
+	version: 2 | 3;
 
 	id: MintingUpdateQueryId;
 	txHash: string;
@@ -73,6 +74,7 @@ export type MintingUpdateQuery = {
 	feeTimeframe: number;
 	feePPM: number;
 	feePaid: string;
+	mintingHubAddress: Address;
 };
 
 // ----------------------------------------------------------------------------------
@@ -127,6 +129,10 @@ export type ApiReferencePositions = {
 	num: number;
 	collaterals: Address[];
 	map: ReferencePositionsMapping;
+};
+
+export type ApiBestCloneable = {
+	position: PositionQuery | null;
 };
 
 export type ApiPositionDefault = {

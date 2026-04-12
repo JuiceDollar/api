@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client/core';
-import { ADDRESS, MintingHubGatewayABI } from '@juicedollar/jusd';
+import { MintingHubGatewayV2ABI, MintingHubV3ABI } from '@juicedollar/jusd';
 import { Injectable, Logger } from '@nestjs/common';
 import { PONDER_CLIENT } from 'api.apollo.config';
-import { VIEM_CONFIG } from 'api.config';
+import { isV3Hub, VIEM_CONFIG } from 'api.config';
 import { Address } from 'viem';
 import {
 	ApiBidsBidders,
@@ -178,17 +178,22 @@ export class ChallengesService {
 
 		// mapping active challenge -> prices
 		const challengesPrices: ChallengesPricesMapping = {};
-		const id = VIEM_CONFIG.chain.id;
 		for (const c of active) {
-			const price = await VIEM_CONFIG.readContract({
-				abi: MintingHubGatewayABI,
-				address: ADDRESS[id].mintingHubGateway,
-				functionName: 'price',
-				args: [parseInt(c.number.toString())],
-				authorizationList: undefined,
-			});
+			try {
+				const abi = isV3Hub(c.mintingHubAddress) ? MintingHubV3ABI : MintingHubGatewayV2ABI;
 
-			challengesPrices[c.id] = price.toString();
+				const price = await VIEM_CONFIG.readContract({
+					abi,
+					address: c.mintingHubAddress,
+					functionName: 'price',
+					args: [BigInt(c.number)],
+					authorizationList: undefined,
+				});
+
+				challengesPrices[c.id] = price.toString();
+			} catch (e) {
+				this.logger.warn(`Failed to fetch price for challenge ${c.id}: ${e.message}`);
+			}
 		}
 
 		// upsert
@@ -206,6 +211,7 @@ export class ChallengesService {
 						items {
 							id
 							position
+							mintingHubAddress
 							number
 							challenger
 							start
@@ -251,6 +257,7 @@ export class ChallengesService {
 						items {
 							id
 							position
+							mintingHubAddress
 							number
 							numberBid
 							bidder
