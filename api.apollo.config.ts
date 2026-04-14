@@ -15,7 +15,7 @@ function getIndexerUrl(): string {
 }
 
 function activateFallback(): void {
-	if (!fallbackUntil) {
+	if (!fallbackUntil && CONFIG.indexerFallback) {
 		fallbackUntil = Date.now() + 10 * 60 * 1000;
 		logger.log(`[Ponder] Switching to fallback for 10min: ${CONFIG.indexerFallback}`);
 	}
