@@ -13,6 +13,8 @@ export function delay(ms: number): Promise<void> {
 }
 
 export function createRefCodeLabelLink(frontendCode: string): string {
+	if (!frontendCode) return '';
+
 	if (frontendCode.toLowerCase() === JUICE_WALLET_FRONTEND_CODE.toLowerCase()) {
 		return `Juice Wallet`;
 	}
