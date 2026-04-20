@@ -24,6 +24,7 @@ import {
 
 // Genesis position address from NPM package
 const GENESIS_POSITION = ADDRESS[CONFIG.chain.id].genesisPosition as Address;
+const MIN_REFERENCE_PRINCIPAL = 1000n * 10n ** 18n;
 
 @Injectable()
 export class PositionsService {
@@ -33,6 +34,56 @@ export class PositionsService {
 	private fetchedMintingUpdates: MintingUpdateQueryObjectArray = {};
 
 	constructor() { }
+
+	private normalizeOptionalAddress(address?: Address): Address | undefined {
+		return address ? (address.toLowerCase() as Address) : undefined;
+	}
+
+	private compareParentPositions(a: PositionQuery, b: PositionQuery): number {
+		if (a.version !== b.version) return b.version - a.version;
+
+		const availableA = BigInt(a.availableForClones);
+		const availableB = BigInt(b.availableForClones);
+		if (availableA !== availableB) return availableA < availableB ? 1 : -1;
+
+		if (a.expiration !== b.expiration) return b.expiration - a.expiration;
+
+		const priceDiff = BigInt(b.price) - BigInt(a.price);
+		if (priceDiff !== 0n) return priceDiff > 0n ? 1 : -1;
+
+		return a.position.localeCompare(b.position);
+	}
+
+	private compareReferencePositions(a: PositionQuery, b: PositionQuery): number {
+		const priceDiff = BigInt(b.price) - BigInt(a.price);
+		if (priceDiff !== 0n) return priceDiff > 0n ? 1 : -1;
+		if (a.expiration !== b.expiration) return b.expiration - a.expiration;
+		return a.position.localeCompare(b.position);
+	}
+
+	private isValidReferenceCandidate(position: PositionQuery, now: number, mintingHubAddress?: Address): boolean {
+		if (mintingHubAddress && position.mintingHubAddress.toLowerCase() !== mintingHubAddress) return false;
+		if (position.closed || position.denied || position.isChallenged) return false;
+		if (BigInt(position.principal) < MIN_REFERENCE_PRINCIPAL) return false;
+		if (Number(position.cooldown) + Number(position.challengePeriod) > now) return false;
+		if (Number(position.expiration) <= now + Number(position.challengePeriod)) return false;
+		return true;
+	}
+
+	private isCloneableParentCandidate(
+		position: PositionQuery,
+		now: number,
+		collateral: Address,
+		mintingHubAddress?: Address,
+	): boolean {
+		if (mintingHubAddress && position.mintingHubAddress.toLowerCase() !== mintingHubAddress) return false;
+		if (position.closed || position.denied || position.isChallenged) return false;
+		if (position.expiration <= now || position.cooldown >= now) return false;
+		if (position.collateral.toLowerCase() !== collateral) return false;
+		if (BigInt(position.collateralBalance) < BigInt(position.minimumCollateral)) return false;
+		if (BigInt(position.availableForClones) <= 0n) return false;
+		return true;
+	}
 
 	getDefaultPosition(): ApiPositionDefault | null {
 		const cached = this.fetchedPositions[GENESIS_POSITION.toLowerCase() as Address];
@@ -304,21 +355,18 @@ export class PositionsService {
 		return list;
 	}
 
-	getReferencePositions(): ApiReferencePositions {
+	getReferencePositions(mintingHubAddress?: Address): ApiReferencePositions {
 		const now = Math.floor(Date.now() / 1000);
 		const candidates = Object.values(this.fetchedPositions) as PositionQuery[];
 		const map: ReferencePositionsMapping = {};
+		const hubFilter = this.normalizeOptionalAddress(mintingHubAddress);
 
 		for (const p of candidates) {
-			if (p.closed || p.denied) continue;
-			if (p.isChallenged) continue;
-			if (BigInt(p.principal) === 0n) continue;
-			if (Number(p.cooldown) >= now) continue;
-			if (Number(p.expiration) <= now) continue;
+			if (!this.isValidReferenceCandidate(p, now, hubFilter)) continue;
 
 			const collateral = p.collateral.toLowerCase() as Address;
 			const current = map[collateral];
-			if (!current || BigInt(p.price) > BigInt(current.price)) {
+			if (!current || this.compareReferencePositions(p, current) < 0) {
 				map[collateral] = p;
 			}
 		}
@@ -327,26 +375,15 @@ export class PositionsService {
 		return { num: collaterals.length, collaterals, map };
 	}
 
-	getBestCloneableParent(collateral: Address): ApiBestCloneable {
+	getBestCloneableParent(collateral: Address, mintingHubAddress?: Address): ApiBestCloneable {
 		const now = Math.floor(Date.now() / 1000);
 		const collateralLower = collateral.toLowerCase() as Address;
 		const candidates = Object.values(this.fetchedPositions) as PositionQuery[];
+		const hubFilter = this.normalizeOptionalAddress(mintingHubAddress);
 
 		const cloneable = candidates
-			.filter(
-				(p) =>
-					!p.closed &&
-					!p.denied &&
-					p.expiration > now &&
-					p.cooldown < now &&
-					BigInt(p.collateralBalance) >= BigInt(p.minimumCollateral) &&
-					p.collateral.toLowerCase() === collateralLower &&
-					!p.isChallenged,
-			)
-			.sort((a, b) => {
-				const diff = BigInt(b.price) - BigInt(a.price);
-				return diff > 0n ? 1 : diff < 0n ? -1 : 0;
-			});
+			.filter((position) => this.isCloneableParentCandidate(position, now, collateralLower, hubFilter))
+			.sort((a, b) => this.compareParentPositions(a, b));
 
 		return { position: cloneable[0] ?? null };
 	}
