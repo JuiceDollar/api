@@ -243,6 +243,7 @@ export class PositionsService {
 			const v = (virtualPriceData[idx] as PromiseFulfilledResult<bigint>).value;
 			const i = (interestData[idx] as PromiseFulfilledResult<bigint>).value;
 			const leadrate = isV3Hub(p.mintingHubAddress) ? v3Leadrate : v2Leadrate;
+			const annualInterestPPM = isV3Hub(p.mintingHubAddress) ? p.fixedAnnualRatePPM : leadrate + p.riskPremiumPPM;
 
 			const entry: PositionQuery = {
 				version: isV3Hub(p.mintingHubAddress) ? 3 : 2,
@@ -263,7 +264,7 @@ export class PositionsService {
 				isChallenged: p.isChallenged,
 
 				minimumCollateral: p.minimumCollateral,
-				annualInterestPPM: leadrate + p.riskPremiumPPM,
+				annualInterestPPM,
 				riskPremiumPPM: p.riskPremiumPPM,
 				reserveContribution: p.reserveContribution,
 				start: p.start,
