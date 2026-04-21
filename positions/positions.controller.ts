@@ -84,17 +84,22 @@ export class PositionsController {
 
 	@Get('reference')
 	@ApiResponse({
-		description: 'Returns the active position with the highest price per collateral for cooldown-free price increases',
+		description: 'Returns the active reference position with the highest price per collateral. Optionally filter by minting hub.',
 	})
-	getReferencePositions(): ApiReferencePositions {
-		return this.positionsService.getReferencePositions();
+	getReferencePositions(@Query('mintingHubAddress') mintingHubAddress?: string): ApiReferencePositions {
+		return this.positionsService.getReferencePositions(
+			mintingHubAddress ? (mintingHubAddress.toLowerCase() as Address) : undefined,
+		);
 	}
 
 	@Get('best-cloneable')
 	@ApiResponse({
-		description: 'Returns the best cloneable parent position for the given collateral (highest price, active, not challenged)',
+		description: 'Returns the best cloneable parent position for the given collateral. Optionally filter by minting hub.',
 	})
-	getBestCloneable(@Query('collateral') collateral: string): ApiBestCloneable {
-		return this.positionsService.getBestCloneableParent((collateral ?? '').toLowerCase() as Address);
+	getBestCloneable(@Query('collateral') collateral: string, @Query('mintingHubAddress') mintingHubAddress?: string): ApiBestCloneable {
+		return this.positionsService.getBestCloneableParent(
+			(collateral ?? '').toLowerCase() as Address,
+			mintingHubAddress ? (mintingHubAddress.toLowerCase() as Address) : undefined,
+		);
 	}
 }

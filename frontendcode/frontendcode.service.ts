@@ -38,9 +38,10 @@ export class FrontendCodeService {
 			query GetFrontendCodeSavingsSaved {
 				savingsSaveds(
 					orderBy: "created", orderDirection: "desc"
-					where: { 
+					where: {
 							created_gt: "${checkTimestamp}"
 							amount_gte: "${minAmount}"
+							frontendCode_not: null
 						}
 					) {
 						items {
