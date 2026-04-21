@@ -79,7 +79,7 @@ export class PositionsService {
 		if (mintingHubAddress && position.mintingHubAddress.toLowerCase() !== mintingHubAddress) return false;
 		if (position.closed || position.denied || position.isChallenged) return false;
 		if (position.expiration <= now || position.cooldown >= now) return false;
-		if (position.collateral.toLowerCase() !== collateral) return false;
+		if (position.collateral.toLowerCase() !== collateral.toLowerCase()) return false;
 		if (BigInt(position.collateralBalance) < BigInt(position.minimumCollateral)) return false;
 		if (BigInt(position.availableForClones) <= 0n) return false;
 		return true;
