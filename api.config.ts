@@ -9,11 +9,10 @@ dotenv.config();
 const isMainnet = process.env.CONFIG_CHAIN === 'mainnet';
 if (isMainnet && process.env.RPC_URL_MAINNET === undefined) throw new Error('RPC_URL_MAINNET not available');
 if (!isMainnet && process.env.RPC_URL_TESTNET === undefined) throw new Error('RPC_URL_TESTNET not available');
-// Either a key for direct Pro access OR a base URL for a fronting pricing proxy
-// must be set; otherwise the upstream CoinGecko calls are anonymous and fail
-// under load.
-if (!process.env.COINGECKO_API_KEY && !process.env.COINGECKO_BASE_URL) {
-	throw new Error('CoinGecko is not configured: set COINGECKO_BASE_URL or COINGECKO_API_KEY');
+// The api always talks to the in-cluster pricing proxy. The upstream Pro key
+// lives in the proxy stack, not here.
+if (!process.env.COINGECKO_BASE_URL) {
+	throw new Error('COINGECKO_BASE_URL is not set');
 }
 
 // Config type
@@ -21,8 +20,7 @@ export type ConfigType = {
 	app: string;
 	indexer: string;
 	indexerFallback: string;
-	coingeckoApiKey: string | undefined;
-	coingeckoBaseUrl: string | undefined;
+	coingeckoBaseUrl: string;
 	chain: Chain;
 	network: {
 		mainnet: string;
@@ -47,8 +45,7 @@ export const CONFIG: ConfigType = {
 	app: process.env.CONFIG_APP_URL,
 	indexer: process.env.CONFIG_INDEXER_URL,
 	indexerFallback: process.env.CONFIG_INDEXER_FALLBACK_URL,
-	coingeckoApiKey: process.env.COINGECKO_API_KEY || undefined,
-	coingeckoBaseUrl: process.env.COINGECKO_BASE_URL || undefined,
+	coingeckoBaseUrl: process.env.COINGECKO_BASE_URL,
 	chain: isMainnet ? mainnet : testnet,
 	network: {
 		mainnet: process.env.RPC_URL_MAINNET,
@@ -73,7 +70,6 @@ export const CONFIG: ConfigType = {
 };
 
 const SENSITIVE_KEYS = new Set<string>([
-	'coingeckoApiKey',
 	'network.mainnet',
 	'network.testnet',
 	'telegram.botToken',
@@ -82,10 +78,6 @@ const SENSITIVE_KEYS = new Set<string>([
 	'twitter.accessToken',
 	'twitter.accessSecret',
 ]);
-
-// `coingeckoBaseUrl` is intentionally NOT redacted — it is a non-secret pointer
-// (typically the in-cluster pricing proxy origin) and useful at startup for
-// confirming routing.
 
 function redactConfig<T>(config: T): T {
 	return walkRedact(config, '') as T;
@@ -126,30 +118,10 @@ export const VIEM_CONFIG = createPublicClient({
 });
 
 // COINGECKO CLIENT
-//
-// Resolution priority:
-//  1. COINGECKO_BASE_URL set → trust the caller (typically a pricing proxy that
-//     injects the upstream key itself); send no auth.
-//  2. COINGECKO_API_KEY set → Pro tier: pro-api.coingecko.com with the
-//     `x-cg-pro-api-key` header. The earlier query-string form is supported by
-//     CoinGecko but cache-poisons proxies that key on the URL.
-export const COINGECKO_CLIENT = (query: string) => {
-	if (CONFIG.coingeckoBaseUrl) {
-		return fetch(`${CONFIG.coingeckoBaseUrl}${query}`);
-	}
-	// Bootstrap above guarantees one of the two is set, so reaching this
-	// branch means coingeckoApiKey is defined. Hard-fail anyway instead of
-	// using a `?? ''` default — sending an empty auth header would silently
-	// turn into 401 at the upstream and look like a CoinGecko outage rather
-	// than the misconfiguration it actually is.
-	if (!CONFIG.coingeckoApiKey) {
-		throw new Error('CoinGecko is not configured: set COINGECKO_BASE_URL or COINGECKO_API_KEY');
-	}
-	const uri: string = `https://pro-api.coingecko.com${query}`;
-	return fetch(uri, {
-		headers: { 'x-cg-pro-api-key': CONFIG.coingeckoApiKey },
-	});
-};
+// All CoinGecko traffic goes through the in-cluster pricing proxy. The proxy
+// holds the upstream key and validates upstream errors, so the api itself
+// never talks to pro-api.coingecko.com directly.
+export const COINGECKO_CLIENT = (query: string) => fetch(`${CONFIG.coingeckoBaseUrl}${query}`);
 
 export const PROTOCOL_STABLECOIN_SYMBOL = 'JUSD';
 export const PROTOCOL_STABLECOIN_NAME = 'Juice Dollar';
