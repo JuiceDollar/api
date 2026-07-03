@@ -6,58 +6,59 @@ import { CONFIG } from './api.config';
 
 const logger = new Logger('ApiApolloConfig');
 
+const FALLBACK_WINDOW_MS = 10 * 60 * 1000;
 let fallbackUntil: number | null = null;
 
+function isFallbackActive(): boolean {
+	return fallbackUntil !== null && Date.now() < fallbackUntil;
+}
+
 function getIndexerUrl(): string {
-	return fallbackUntil && Date.now() < fallbackUntil 
-		? CONFIG.indexerFallback 
-		: CONFIG.indexer;
+	return isFallbackActive() ? CONFIG.indexerFallback : CONFIG.indexer;
 }
 
 function activateFallback(): void {
-	if (!fallbackUntil && CONFIG.indexerFallback) {
-		fallbackUntil = Date.now() + 10 * 60 * 1000;
-		logger.log(`[Ponder] Switching to fallback for 10min: ${CONFIG.indexerFallback}`);
+	if (!isFallbackActive() && CONFIG.indexerFallback) {
+		fallbackUntil = Date.now() + FALLBACK_WINDOW_MS;
+		logger.warn(`[Ponder] Switching to fallback for ${FALLBACK_WINDOW_MS / 60000}min: ${CONFIG.indexerFallback}`);
 	}
 }
 
+// Stamps each attempt with its target URL so errors are attributed to the URL
+// the request was actually sent to, not the routing state at error time.
+const routingLink = new ApolloLink((operation, forward) => {
+	operation.setContext({ targetUrl: getIndexerUrl() });
+	return forward(operation);
+});
+
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+	const opName = operation?.operationName || 'unknown';
+
 	if (graphQLErrors) {
 		graphQLErrors.forEach((error) => {
-			logger.error(`[GraphQL error in operation: ${operation?.operationName || 'unknown'}]`, {
-				message: error.message,
-				locations: error.locations,
-				path: error.path,
-			});
+			logger.error(`[GraphQL error in operation: ${opName}] ${error.message}`);
 		});
 	}
-	
+
 	if (networkError) {
-		logger.error(`[Network error in operation: ${operation?.operationName || 'unknown'}]`, {
-			message: networkError.message,
-			name: networkError.name,
-			stack: networkError.stack,
-		});
+		const msg = `[Network error in operation: ${opName}] ${networkError.message}`;
+		const sentToFallback = !!CONFIG.indexerFallback && operation.getContext().targetUrl === CONFIG.indexerFallback;
 
-		if (getIndexerUrl() === CONFIG.indexer) {
-			const is503 =
-				(networkError as any)?.response?.status === 503 ||
-				(networkError as any)?.statusCode === 503 ||
-				(networkError as any)?.result?.status === 503;
-
-			if (is503) {
-				logger.log('[Ponder] 503 Service Unavailable - Ponder is syncing, switching to fallback');
-			} else {
-				logger.log('[Ponder] Network error detected, activating fallback');
-			}
+		if (CONFIG.indexerFallback && !sentToFallback) {
+			// Primary failed and a fallback exists — log at warn so transparent
+			// retries don't inflate error-rate panels.
+			logger.warn(msg);
 			activateFallback();
 			return forward(operation);
 		}
+
+		// No fallback configured, or the fallback itself failed — nothing more to try.
+		logger.error(msg);
 	}
 });
 
 const httpLink = createHttpLink({
-	uri: () => getIndexerUrl(),
+	uri: (operation) => operation.getContext().targetUrl ?? getIndexerUrl(),
 	fetch: (uri: RequestInfo | URL, options?: RequestInit) => {
 		const controller = new AbortController();
 		const timeout = setTimeout(() => {
@@ -67,14 +68,13 @@ const httpLink = createHttpLink({
 		return fetch(uri, {
 			...options,
 			signal: controller.signal,
-		})
-			.finally(() => {
-				clearTimeout(timeout);
-			});
+		}).finally(() => {
+			clearTimeout(timeout);
+		});
 	},
 });
 
-const link = ApolloLink.from([errorLink, httpLink]);
+const link = ApolloLink.from([errorLink, routingLink, httpLink]);
 
 export const PONDER_CLIENT = new ApolloClient({
 	link,
