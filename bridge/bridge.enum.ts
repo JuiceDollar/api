@@ -7,7 +7,7 @@ export enum StablecoinEnum {
 	ctUSD = 'ctUSD',
 }
 
-// Map enum values to lowercased stablecoin token addresses (skipping undefined for testnet)
+// Map enum values to lowercased stablecoin token addresses (skipping undefined entries)
 export const STABLECOIN_ADDRESS: Partial<Record<StablecoinEnum, string>> = {
 	...(ADDR?.startUSD ? { [StablecoinEnum.StartUSD]: ADDR.startUSD.toLowerCase() } : {}),
 	...(ADDR?.USDC ? { [StablecoinEnum.USDCe]: ADDR.USDC.toLowerCase() } : {}),

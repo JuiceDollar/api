@@ -222,7 +222,7 @@ export class PositionsService {
 			authorizationList: undefined,
 		});
 
-		// V3 leadrate is best-effort — not available on all chains (e.g. testnet)
+		// V3 leadrate is best-effort — not available when savings is undeployed
 		let v3Leadrate = 0;
 		if (isDeployed(ADDR.savings)) {
 			try {
