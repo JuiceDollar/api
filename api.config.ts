@@ -1,14 +1,12 @@
 import { Address, Chain, createPublicClient, http, zeroAddress } from 'viem';
 import { ADDRESS } from '@juicedollar/jusd';
 import { Logger } from '@nestjs/common';
-import { mainnet, testnet } from 'chains';
+import { mainnet } from 'chains';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Verify environment
-const isMainnet = process.env.CONFIG_CHAIN === 'mainnet';
-if (isMainnet && process.env.RPC_URL_MAINNET === undefined) throw new Error('RPC_URL_MAINNET not available');
-if (!isMainnet && process.env.RPC_URL_TESTNET === undefined) throw new Error('RPC_URL_TESTNET not available');
+if (process.env.RPC_URL_MAINNET === undefined) throw new Error('RPC_URL_MAINNET not available');
 // COINGECKO_BASE_URL is the origin the api calls — typically the in-cluster
 // pricing-proxy (https://github.com/DFXswiss/pricing-proxy), but any
 // CoinGecko-compatible host works. COINGECKO_API_KEY is optional and is
@@ -28,7 +26,6 @@ export type ConfigType = {
 	chain: Chain;
 	network: {
 		mainnet: string;
-		testnet: string;
 	};
 	telegram: {
 		botToken: string;
@@ -51,10 +48,9 @@ export const CONFIG: ConfigType = {
 	indexerFallback: process.env.CONFIG_INDEXER_FALLBACK_URL,
 	coingeckoBaseUrl: process.env.COINGECKO_BASE_URL,
 	coingeckoApiKey: process.env.COINGECKO_API_KEY || undefined,
-	chain: isMainnet ? mainnet : testnet,
+	chain: mainnet,
 	network: {
 		mainnet: process.env.RPC_URL_MAINNET,
-		testnet: process.env.RPC_URL_TESTNET,
 	},
 	telegram: process.env.TELEGRAM_BOT_TOKEN
 		? {
@@ -77,7 +73,6 @@ export const CONFIG: ConfigType = {
 const SENSITIVE_KEYS = new Set<string>([
 	'coingeckoApiKey',
 	'network.mainnet',
-	'network.testnet',
 	'telegram.botToken',
 	'twitter.appKey',
 	'twitter.appSecret',
@@ -115,7 +110,7 @@ process.env.NTBA_FIX_350 = 'true';
 export const VIEM_CHAIN = CONFIG.chain;
 export const VIEM_CONFIG = createPublicClient({
 	chain: VIEM_CHAIN,
-	transport: http(isMainnet ? CONFIG.network.mainnet : CONFIG.network.testnet),
+	transport: http(CONFIG.network.mainnet),
 	batch: {
 		multicall: {
 			wait: 200,

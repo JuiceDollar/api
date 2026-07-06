@@ -15,8 +15,8 @@ import {
 	PriceQueryObjectArray,
 } from './prices.types';
 
-// Mapping of testnet token symbols to Coingecko IDs for real price fetching
-const TESTNET_COINGECKO_MAPPING: Record<string, string | null> = {
+// Mapping of Citrea token symbols to Coingecko IDs for real price fetching
+const CITREA_COINGECKO_MAPPING: Record<string, string | null> = {
 	WCBTC: 'bitcoin',
 	WBTC: 'bitcoin',
 	WETH: 'ethereum',
@@ -99,41 +99,25 @@ export class PricesService {
 	}
 
 	async fetchSourcesCoingecko(erc: ERC20Info): Promise<PriceQueryCurrencies | null> {
-		// all mainnet addresses
-		if ((VIEM_CHAIN.id as number) === 1) {
-			const url = `/api/v3/simple/token_price/ethereum?contract_addresses=${erc.address}&vs_currencies=usd`;
-			const data = await (await COINGECKO_CLIENT(url)).json();
-			if (data.status) {
-				this.logger.debug(data.status?.error_message || 'Error fetching price from coingecko');
-				return null;
-			}
-			const result = Object.values(data)[0] as { usd: number } | undefined;
-			if (!result?.usd) {
-				this.logger.warn(`No price data from Coingecko for ${erc.symbol} (${erc.address})`);
-				return null;
-			}
-			return { usd: result.usd };
-		} else {
-			// Testnet: Map token symbols to real Coingecko prices
-			const symbol = erc.symbol?.toUpperCase();
-			const coingeckoId = symbol ? TESTNET_COINGECKO_MAPPING[symbol] : null;
+		// Citrea: map token symbols to real Coingecko prices
+		const symbol = erc.symbol?.toUpperCase();
+		const coingeckoId = symbol ? CITREA_COINGECKO_MAPPING[symbol] : null;
 
-			if (coingeckoId) {
-				try {
-					const url = `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
-					const data = await (await COINGECKO_CLIENT(url)).json();
-					if (data[coingeckoId]?.usd) {
-						this.logger.debug(`Fetched real price for ${erc.symbol} via ${coingeckoId}: $${data[coingeckoId].usd}`);
-						return { usd: data[coingeckoId].usd };
-					}
-				} catch (error) {
-					this.logger.warn(`Failed to fetch price for ${erc.symbol}: ${error.message || error}`);
+		if (coingeckoId) {
+			try {
+				const url = `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
+				const data = await (await COINGECKO_CLIENT(url)).json();
+				if (data[coingeckoId]?.usd) {
+					this.logger.debug(`Fetched real price for ${erc.symbol} via ${coingeckoId}: $${data[coingeckoId].usd}`);
+					return { usd: data[coingeckoId].usd };
 				}
+			} catch (error) {
+				this.logger.warn(`Failed to fetch price for ${erc.symbol}: ${error.message || error}`);
 			}
-
-			// Fallback for stablecoins and unknown tokens
-			return { usd: 1 };
 		}
+
+		// Fallback for stablecoins and unknown tokens
+		return { usd: 1 };
 	}
 
 	async fetchPrice(erc: ERC20Info): Promise<PriceQueryCurrencies | null> {
